@@ -59,6 +59,9 @@
         .panel-title{display:flex;align-items:center;gap:8px;font-size:.74rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:1.2px;margin-bottom:12px}
         .panel-title .dot{width:8px;height:8px;border-radius:50%;background:var(--primary);box-shadow:0 0 6px var(--primary)}
         .translation-box{background:var(--card2);border-radius:10px;padding:14px;min-height:100px;line-height:1.7;font-size:.89rem;word-break:break-word;border:1px solid rgba(255,255,255,.04)}
+        .manual-pronounce{display:flex;gap:6px;margin-bottom:12px; margin-top:5px;}
+        .manual-pronounce input{flex:1;background:var(--card2);border:1px solid var(--border);border-radius:8px;color:var(--text);padding:8px 12px;font-size:.85rem;outline:none;}
+        .manual-pronounce input:focus{border-color:var(--accent);}
         .manual-translate{display:flex;gap:6px;margin-bottom:10px;}
         .manual-translate input{flex:1;background:var(--card2);border:1px solid var(--border);border-radius:8px;color:var(--text);padding:8px 12px;font-size:.85rem;outline:none;}
         .manual-translate input:focus{border-color:var(--accent);}
@@ -207,15 +210,42 @@
         <div class="control-group">
             <label style="font-size:0.7rem;">🌐 Document Language</label>
             <select id="langSelectMobile">
-                <option value="hi">🇮🇳 Hindi</option><option value="bn">🇧🇩 Bengali</option>
-                <option value="ta">🇮🇳 Tamil</option><option value="te">🇮🇳 Telugu</option>
-                <option value="mr">🇮🇳 Marathi</option><option value="gu">🇮🇳 Gujarati</option>
-                <option value="pa">🇮🇳 Punjabi</option><option value="ja">🇯🇵 Japanese</option>
-                <option value="ru">🇷🇺 Russian</option><option value="en" selected>🇺🇸 English</option>
-                <option value="de">🇩🇪 German</option><option value="fr">🇫🇷 French</option>
-                <option value="es">🇪🇸 Spanish</option><option value="zh">🇨🇳 Chinese</option>
-                <option value="ar">🇸🇦 Arabic</option><option value="ko">🇰🇷 Korean</option>
-                <option value="pt">🇧🇷 Portuguese</option><option value="it">🇮🇹 Italian</option>
+                <option value="en" selected>🇺🇸 English</option>
+                <option value="de">🇩🇪 German</option>
+                <option value="fr">🇫🇷 French</option>
+                <option value="es">🇪🇸 Spanish</option>
+                <option value="zh">🇨🇳 Chinese</option>
+                <option value="ja">🇯🇵 Japanese</option>
+                <option value="ru">🇷🇺 Russian</option>
+                <option value="hi">🇮🇳 Hindi</option>
+                <option value="bn">🇧🇩 Bengali</option>
+                <option value="ta">🇮🇳 Tamil</option>
+                <option value="te">🇮🇳 Telugu</option>
+                <option value="mr">🇮🇳 Marathi</option>
+                <option value="gu">🇮🇳 Gujarati</option>
+                <option value="pa">🇮🇳 Punjabi</option>
+                <option value="ar">🇸🇦 Arabic</option>
+                <option value="ko">🇰🇷 Korean</option>
+                <option value="pt">🇧🇷 Portuguese</option>
+                <option value="it">🇮🇹 Italian</option>
+                <!-- many more added from the robust code -->
+                <option value="af">🇿🇦 Afrikaans</option><option value="bg">🇧🇬 Bulgarian</option>
+                <option value="ca">🇪🇸 Catalan</option><option value="cs">🇨🇿 Czech</option>
+                <option value="da">🇩🇰 Danish</option><option value="el">🇬🇷 Greek</option>
+                <option value="fi">🇫🇮 Finnish</option><option value="he">🇮🇱 Hebrew</option>
+                <option value="hr">🇭🇷 Croatian</option><option value="hu">🇭🇺 Hungarian</option>
+                <option value="id">🇮🇩 Indonesian</option><option value="kn">🇮🇳 Kannada</option>
+                <option value="lt">🇱🇹 Lithuanian</option><option value="lv">🇱🇻 Latvian</option>
+                <option value="ml">🇮🇳 Malayalam</option><option value="ms">🇲🇾 Malay</option>
+                <option value="nl">🇳🇱 Dutch</option><option value="nb">🇳🇴 Norwegian</option>
+                <option value="pl">🇵🇱 Polish</option><option value="ro">🇷🇴 Romanian</option>
+                <option value="sk">🇸🇰 Slovak</option><option value="sl">🇸🇮 Slovenian</option>
+                <option value="sq">🇦🇱 Albanian</option><option value="sr">🇷🇸 Serbian</option>
+                <option value="sv">🇸🇪 Swedish</option><option value="sw">🇰🇪 Swahili</option>
+                <option value="th">🇹🇭 Thai</option><option value="tl">🇵🇭 Filipino</option>
+                <option value="tr">🇹🇷 Turkish</option><option value="uk">🇺🇦 Ukrainian</option>
+                <option value="ur">🇵🇰 Urdu</option><option value="vi">🇻🇳 Vietnamese</option>
+                <option value="zu">🇿🇦 Zulu</option>
             </select>
         </div>
         <div class="control-group">
@@ -271,7 +301,7 @@
         <button class="bn-btn" id="bnHistory"><span class="bn-icon">🕑</span>History</button>
         <button class="bn-btn center-btn" id="bnTools"><span class="bn-icon">🎤</span>Voice</button>
         <button class="bn-btn" id="bnTranslate"><span class="bn-icon">📘</span>Meaning</button>
-        <button class="bn-btn" id="bnFeedback"><span class="bn-icon">💬</span>Feedback</button>
+        <button class="bn-btn" id="bnFeedback"><span class="bn-icon">💬</span>More</button>
     </div>
 </nav>
 
@@ -285,15 +315,42 @@
         <div class="control-group">
             <label>🌐 Language</label>
             <select id="languageSelect">
-                <option value="hi">🇮🇳 Hindi</option><option value="bn">🇧🇩 Bengali</option>
-                <option value="ta">🇮🇳 Tamil</option><option value="te">🇮🇳 Telugu</option>
-                <option value="mr">🇮🇳 Marathi</option><option value="gu">🇮🇳 Gujarati</option>
-                <option value="pa">🇮🇳 Punjabi</option><option value="ja">🇯🇵 Japanese</option>
-                <option value="ru">🇷🇺 Russian</option><option value="en" selected>🇺🇸 English</option>
-                <option value="de">🇩🇪 German</option><option value="fr">🇫🇷 French</option>
-                <option value="es">🇪🇸 Spanish</option><option value="zh">🇨🇳 Chinese</option>
-                <option value="ar">🇸🇦 Arabic</option><option value="ko">🇰🇷 Korean</option>
-                <option value="pt">🇧🇷 Portuguese</option><option value="it">🇮🇹 Italian</option>
+                <option value="en" selected>🇺🇸 English</option>
+                <option value="de">🇩🇪 German</option>
+                <option value="fr">🇫🇷 French</option>
+                <option value="es">🇪🇸 Spanish</option>
+                <option value="zh">🇨🇳 Chinese</option>
+                <option value="ja">🇯🇵 Japanese</option>
+                <option value="ru">🇷🇺 Russian</option>
+                <option value="hi">🇮🇳 Hindi</option>
+                <option value="bn">🇧🇩 Bengali</option>
+                <option value="ta">🇮🇳 Tamil</option>
+                <option value="te">🇮🇳 Telugu</option>
+                <option value="mr">🇮🇳 Marathi</option>
+                <option value="gu">🇮🇳 Gujarati</option>
+                <option value="pa">🇮🇳 Punjabi</option>
+                <option value="ar">🇸🇦 Arabic</option>
+                <option value="ko">🇰🇷 Korean</option>
+                <option value="pt">🇧🇷 Portuguese</option>
+                <option value="it">🇮🇹 Italian</option>
+                <!-- same extended list as mobile -->
+                <option value="af">🇿🇦 Afrikaans</option><option value="bg">🇧🇬 Bulgarian</option>
+                <option value="ca">🇪🇸 Catalan</option><option value="cs">🇨🇿 Czech</option>
+                <option value="da">🇩🇰 Danish</option><option value="el">🇬🇷 Greek</option>
+                <option value="fi">🇫🇮 Finnish</option><option value="he">🇮🇱 Hebrew</option>
+                <option value="hr">🇭🇷 Croatian</option><option value="hu">🇭🇺 Hungarian</option>
+                <option value="id">🇮🇩 Indonesian</option><option value="kn">🇮🇳 Kannada</option>
+                <option value="lt">🇱🇹 Lithuanian</option><option value="lv">🇱🇻 Latvian</option>
+                <option value="ml">🇮🇳 Malayalam</option><option value="ms">🇲🇾 Malay</option>
+                <option value="nl">🇳🇱 Dutch</option><option value="nb">🇳🇴 Norwegian</option>
+                <option value="pl">🇵🇱 Polish</option><option value="ro">🇷🇴 Romanian</option>
+                <option value="sk">🇸🇰 Slovak</option><option value="sl">🇸🇮 Slovenian</option>
+                <option value="sq">🇦🇱 Albanian</option><option value="sr">🇷🇸 Serbian</option>
+                <option value="sv">🇸🇪 Swedish</option><option value="sw">🇰🇪 Swahili</option>
+                <option value="th">🇹🇭 Thai</option><option value="tl">🇵🇭 Filipino</option>
+                <option value="tr">🇹🇷 Turkish</option><option value="uk">🇺🇦 Ukrainian</option>
+                <option value="ur">🇵🇰 Urdu</option><option value="vi">🇻🇳 Vietnamese</option>
+                <option value="zu">🇿🇦 Zulu</option>
             </select>
         </div>
         <div class="control-group" style="position:relative;">
@@ -337,8 +394,13 @@
         <div class="sidebar">
             <div class="panel">
                 <div class="panel-title"><span class="dot"></span> Pronunciation</div>
+                <!-- Manual pronunciation input (write text and get pronunciation) -->
+                <div class="manual-pronounce">
+                    <input type="text" id="manualPronounceInput" placeholder="Type a word...">
+                    <button class="btn-zoom" id="manualPronounceBtn" style="padding:6px 12px;">🔊 Speak</button>
+                </div>
                 <div class="pronunc-box" id="pronuncBox"><div class="word" id="pronuncWord"></div></div>
-                <div style="color:var(--muted);font-style:italic;font-size:.83rem" id="speakPlaceholder">Click a word to hear it…</div>
+                <div style="color:var(--muted);font-style:italic;font-size:.83rem" id="speakPlaceholder">Or click a word in the PDF…</div>
                 <div class="slider-group" id="ttsSliders" style="display:none">
                     <label>Speed <span id="rateVal">1.0×</span></label>
                     <input type="range" id="rateSlider" min=".5" max="2" step=".1" value="1.0">
@@ -385,52 +447,74 @@ const DESKTOP_BASE=1.5,DESKTOP_MIN=0.5,DESKTOP_MAX=4.0,DESKTOP_STEP=0.25;
 let mobileUserScale=1.0;
 const MOBILE_MIN=0.5,MOBILE_MAX=4.0,MOBILE_STEP=0.25;
 
-// ── Sample phrases for voice preview ─────────────────────────────────────────
-const samplePhrases = {
-  'hi': 'नमस्ते, यह एक नमूना है।',
-  'bn': 'নমস্কার, এটি একটি নমুনা।',
-  'ta': 'வணக்கம், இது ஒரு மாதிரி.',
-  'te': 'నమస్కారం, ఇది నమూనా.',
-  'mr': 'नमस्कार, हा नमुना आहे.',
-  'gu': 'નમસ્તે, આ એક નમૂનો છે.',
-  'pa': 'ਸਤ ਸ੍ਰੀ ਅਕਾਲ, ਇਹ ਇੱਕ ਨਮੂਨਾ ਹੈ।',
-  'ja': 'こんにちは、これはサンプルです。',
-  'ru': 'Здравствуйте, это образец.',
-  'en': 'Hello, this is a sample.',
-  'de': 'Hallo, das ist ein Beispiel.',
-  'fr': 'Bonjour, ceci est un exemple.',
-  'es': 'Hola, esto es una muestra.',
-  'zh': '你好，这是一个样本。',
-  'ar': 'مرحبا، هذه عينة.',
-  'ko': '안녕하세요, 이것은 샘플입니다.',
-  'pt': 'Olá, isto é uma amostra.',
-  'it': 'Ciao, questo è un esempio.'
+// ── Language to BCP-47 mapping (from robust code) ───────────────────────────
+const LANG_BCP = {
+    en:'en-US', de:'de-DE', ja:'ja-JP', fr:'fr-FR', zh:'zh-CN', hi:'hi-IN',
+    af:'af', ar:'ar', bg:'bg', bn:'bn', ca:'ca', cs:'cs', da:'da', el:'el',
+    es:'es-ES', fi:'fi', gu:'gu', he:'he', hr:'hr', hu:'hu', id:'id', it:'it-IT',
+    kn:'kn', ko:'ko-KR', lt:'lt', lv:'lv', ml:'ml', mr:'mr', ms:'ms', nl:'nl-NL',
+    nb:'nb', pa:'pa', pl:'pl-PL', pt:'pt-BR', ro:'ro', ru:'ru-RU', sk:'sk', sl:'sl',
+    sq:'sq', sr:'sr', sv:'sv-SE', sw:'sw', ta:'ta-IN', te:'te-IN', th:'th', tl:'tl',
+    tr:'tr', uk:'uk', ur:'ur', vi:'vi', zu:'zu'
 };
 
-// ── Helper to identify Google voices ───────────────────────────────────────
+// ── Helper to identify Google voices (from robust code) ─────────────────────
 function isGoogleVoice(voice) {
     return voice.name.toLowerCase().includes('google');
 }
 
-// ── Voice fallback helper (prioritizes Google) ─────────────────────────────
+// ── Voice fallback helper (prioritizes Google, then exact language, then any) ──
 function getBestVoiceForLang(lang) {
     if (!allVoices.length) return null;
+    const bcp = LANG_BCP[lang] || lang;
+    const langLower = lang.toLowerCase();
     
-    // First, try to find a Google voice for the exact language
-    let voice = allVoices.find(v => isGoogleVoice(v) && (v.lang.startsWith(lang) || v.lang.startsWith(lang+'-')));
+    // 1. Google voice with exact BCP match
+    let voice = allVoices.find(v => isGoogleVoice(v) && (v.lang.toLowerCase() === bcp.toLowerCase() || v.lang.toLowerCase().startsWith(langLower)));
     if (voice) return voice;
     
-    // Then any voice for that language
-    voice = allVoices.find(v => v.lang.startsWith(lang) || v.lang.startsWith(lang+'-'));
+    // 2. Any voice with exact BCP match
+    voice = allVoices.find(v => v.lang.toLowerCase() === bcp.toLowerCase() || v.lang.toLowerCase().startsWith(langLower));
     if (voice) return voice;
     
-    // Then any Google voice
+    // 3. Any Google voice
     voice = allVoices.find(v => isGoogleVoice(v));
     if (voice) return voice;
     
-    // Finally any voice
+    // 4. Any voice at all
     return allVoices[0];
 }
+
+// ── Sample phrases for voice preview (from robust code) ─────────────────────
+const samplePhrases = {
+    en:"Hello! How are you today?", de:"Hallo! Wie geht es dir heute?",
+    ja:"こんにちは！今日はお元気ですか？", fr:"Bonjour! Comment allez-vous aujourd'hui?",
+    zh:"你好！你今天怎么样？", hi:"नमस्ते! आज आप कैसे हैं?",
+    af:"Hallo! Hoe gaan dit vandag met jou?", ar:"مرحباً! كيف حالك اليوم؟",
+    bg:"Здравейте! Как сте днес?", bn:"হ্যালো! আজ আপনি কেমন আছেন?",
+    ca:"Hola! Com estàs avui?", cs:"Ahoj! Jak se dnes máš?",
+    da:"Hej! Hvordan har du det i dag?", el:"Γεια σου! Πώς είσαι σήμερα;",
+    es:"¡Hola! ¿Cómo estás hoy?", fi:"Hei! Miten voit tänään?",
+    gu:"હેલો! આજે તમે કેમ છો?", he:"שלום! איך אתה היום?",
+    hr:"Bok! Kako si danas?", hu:"Szia! Hogy vagy ma?",
+    id:"Halo! Apa kabar hari ini?", it:"Ciao! Come stai oggi?",
+    kn:"ಹಲೋ! ಇಂದು ನೀವು ಹೇಗಿದ್ದೀರಿ?", ko:"안녕하세요! 오늘 어떻게 지내세요?",
+    lt:"Labas! Kaip šiandien jautiesi?", lv:"Sveiki! Kā jums šodien iet?",
+    ml:"ഹലോ! ഇന്ന് നിങ്ങൾക്ക് എങ്ങനെ ഉണ്ട്?", mr:"नमस्कार! आज तुम्ही कसे आहात?",
+    ms:"Helo! Apa khabar hari ini?", nl:"Hallo! Hoe gaat het vandaag met je?",
+    nb:"Hei! Hvordan har du det i dag?", pa:"ਸਤ ਸ੍ਰੀ ਅਕਾਲ! ਅੱਜ ਤੁਸੀਂ ਕਿਵੇਂ ਹੋ?",
+    pl:"Cześć! Jak się dzisiaj czujesz?", pt:"Olá! Como você está hoje?",
+    ro:"Bună ziua! Cum ești azi?", ru:"Привет! Как ты сегодня?",
+    sk:"Ahoj! Ako sa dnes máš?", sl:"Pozdravljeni! Kako ste danes?",
+    sq:"Përshëndetje! Si jeni sot?", sr:"Здраво! Како си данас?",
+    sv:"Hej! Hur mår du idag?", sw:"Habari! Habari za leo?",
+    ta:"வணக்கம்! இன்று நீங்கள் எப்படி இருக்கிறீர்கள்?",
+    te:"హలో! మీరు ఈ రోజు ఎలా ఉన్నారు?",
+    th:"สวัสดี! วันนี้คุณเป็นอย่างไรบ้าง?", tl:"Kamusta! Kumusta ka ngayon?",
+    tr:"Merhaba! Bugün nasılsın?", uk:"Привіт! Як ти сьогодні?",
+    ur:"ہیلو! آج آپ کیسے ہیں؟", vi:"Xin chào! Hôm nay bạn khỏe không?",
+    zu:"Sawubona! Unjani namuhla?"
+};
 
 function playVoiceSample(lang, voiceObj) {
     const phrase = samplePhrases[lang] || samplePhrases['en'];
@@ -440,6 +524,7 @@ function playVoiceSample(lang, voiceObj) {
     window.speechSynthesis.cancel();
     const utter = new SpeechSynthesisUtterance(phrase);
     utter.voice = voice;
+    utter.lang = voice.lang; // critical for correct pronunciation
     utter.rate = 1.0;
     utter.pitch = 1.0;
     window.speechSynthesis.speak(utter);
@@ -502,14 +587,17 @@ function loadVoices(){
     updateVoiceDropdowns();
 }
 function updateVoiceDropdowns(){
-    // Filter voices by current language
-    let filtered = allVoices.filter(v=>v.lang.startsWith(currentLang)||v.lang.startsWith(currentLang+'-'));
+    // Filter voices by current language (using BCP mapping)
+    const bcpTarget = LANG_BCP[currentLang] || currentLang;
+    let filtered = allVoices.filter(v => {
+        const vLang = v.lang.toLowerCase();
+        return vLang === bcpTarget.toLowerCase() || vLang.startsWith(currentLang.toLowerCase());
+    });
     // Sort: Google voices first, then others
     filtered.sort((a,b) => {
         const aGoogle = isGoogleVoice(a) ? 0 : 1;
         const bGoogle = isGoogleVoice(b) ? 0 : 1;
         if (aGoogle !== bGoogle) return aGoogle - bGoogle;
-        // If both same type, sort by name
         return a.name.localeCompare(b.name);
     });
     
@@ -562,6 +650,17 @@ $('langSelectMobile')&&$('langSelectMobile').addEventListener('change',e=>onLang
 $('voiceSampleDesktop')&&$('voiceSampleDesktop').addEventListener('click',()=>{
     if(!selectedVoice){showToast('⚠️ Select a voice first');return;}
     playVoiceSample(currentLang, selectedVoice);
+});
+
+// ── Manual Pronunciation (Desktop) ─────────────────────────────────────────
+$('manualPronounceBtn')&&$('manualPronounceBtn').addEventListener('click',()=>{
+    const word=$('manualPronounceInput').value.trim();
+    if(word){
+        onSpeak(word);
+    } else showToast('Type a word');
+});
+$('manualPronounceInput')&&$('manualPronounceInput').addEventListener('keypress',e=>{
+    if(e.key==='Enter') $('manualPronounceBtn').click();
 });
 
 // ── Desktop Feedback ─────────────────────────────────────────────────────────
@@ -688,6 +787,7 @@ async function renderBookPage(num){
     $('readingProgress').style.width=((currentPage/totalPages)*100)+'%';
 }
 
+// ── DESKTOP RENDERING ────────────────────────────────────────────────────────
 async function renderDesktopPage(num){
     if(!pdfDoc)return;
     const page=await pdfDoc.getPage(num);
@@ -717,6 +817,8 @@ async function renderDesktopPage(num){
         attachClickGestures(span);
         textLayer.appendChild(span);
     });
+
+    updateNavButtons();
 }
 
 function updateNavButtons(){
@@ -852,10 +954,15 @@ function attachTouchGestures(span){
     }, {passive:true});
 }
 
-// ── Speak & Translate (with Google voice preference) ─────────────────────────
+// ── Speak & Translate (with robust voice selection) ─────────────────────────
 function onSpeak(text){
     bsCurrentWord=text; addHistory(text,'speak');
-    if($('pronuncBox')){$('pronuncBox').style.display='block'; $('pronuncWord').textContent=text; $('speakPlaceholder').style.display='none'; $('ttsSliders').style.display='block';}
+    if($('pronuncBox')){
+        $('pronuncBox').style.display='block';
+        $('pronuncWord').textContent=text;
+        $('speakPlaceholder').style.display='none';
+        $('ttsSliders').style.display='block';
+    }
     speakText(text);
 }
 function speakText(text){
@@ -868,7 +975,9 @@ function speakText(text){
     }
     window.speechSynthesis.cancel();
     const u=new SpeechSynthesisUtterance(text);
-    u.voice=voice; u.rate=ttsRate; u.pitch=ttsPitch; u.volume=1.0;
+    u.voice=voice;
+    u.lang = voice.lang; // crucial for correct pronunciation
+    u.rate=ttsRate; u.pitch=ttsPitch; u.volume=1.0;
     showToast('🔊 '+text,1800);
     window.speechSynthesis.speak(u);
 }
@@ -876,8 +985,12 @@ window.speakTranslation=function(text){
     window.speechSynthesis.cancel();
     const u=new SpeechSynthesisUtterance(text);
     const enVoice = getBestVoiceForLang('en');
-    if(enVoice) u.voice=enVoice;
-    u.rate=1.0; window.speechSynthesis.speak(u);
+    if(enVoice) {
+        u.voice=enVoice;
+        u.lang = enVoice.lang;
+    }
+    u.rate=1.0; u.pitch=1.0;
+    window.speechSynthesis.speak(u);
 };
 
 function onTranslate(text){
@@ -948,6 +1061,11 @@ function renderBsTab(t){
     if(t==='speak'){
         content.innerHTML=`
             <div style="margin-bottom:12px;">
+                <div style="font-size:.7rem;color:var(--muted);font-weight:700;text-transform:uppercase;margin-bottom:6px;">✍️ Write to Pronounce</div>
+                <div class="manual-pronounce" style="margin-bottom:8px;">
+                    <input type="text" id="bsManualPronounceInput" placeholder="Type a word..." style="flex:1;background:var(--card2);border:1px solid var(--border);border-radius:8px;color:var(--text);padding:8px 10px;font-size:14px;">
+                    <button class="btn-zoom" id="bsManualPronounceBtn" style="padding:6px 12px;">🔊 Speak</button>
+                </div>
                 <div style="font-size:.7rem;color:var(--muted);font-weight:700;text-transform:uppercase;margin-bottom:6px;">🔊 Last Word</div>
                 <div style="background:var(--card2);border-radius:10px;padding:10px 14px;font-size:1rem;font-weight:700;color:var(--accent);min-height:40px;">${escHtml(bsCurrentWord)||'<span style="color:var(--muted);font-style:italic;font-size:.85rem;">Tap a word in the PDF</span>'}</div>
             </div>
@@ -968,8 +1086,12 @@ function renderBsTab(t){
                 <input type="range" id="bsPitch" min=".5" max="2" step=".1" value="${ttsPitch}" style="width:100%;accent-color:var(--primary);margin-top:5px;height:6px;">
             </div>`;
         const vs=$('bsVoiceSelect');
-        // For bottom sheet, we need to rebuild the voice list sorted
-        let filtered = allVoices.filter(v=>v.lang.startsWith(currentLang)||v.lang.startsWith(currentLang+'-'));
+        // Build voice list for current language
+        let filtered = allVoices.filter(v=>{
+            const vLang = v.lang.toLowerCase();
+            const bcpTarget = LANG_BCP[currentLang] || currentLang;
+            return vLang === bcpTarget.toLowerCase() || vLang.startsWith(currentLang.toLowerCase());
+        });
         filtered.sort((a,b) => {
             const aGoogle = isGoogleVoice(a) ? 0 : 1;
             const bGoogle = isGoogleVoice(b) ? 0 : 1;
@@ -978,13 +1100,11 @@ function renderBsTab(t){
         });
         if(!filtered.length){const o=document.createElement('option');o.textContent='No voices available';vs.appendChild(o);}
         else{filtered.forEach(v=>{const o=document.createElement('option');o.value=v.name;o.textContent=`${v.name} (${v.lang})${isGoogleVoice(v) ? ' ★' : ''}`;vs.appendChild(o);});}
-        if(selectedVoice) {
-            if (filtered.find(v => v.name === selectedVoice.name)) vs.value = selectedVoice.name;
-            else {
-                const googleFirst = filtered.find(v => isGoogleVoice(v));
-                if (googleFirst) vs.value = googleFirst.name;
-                else vs.value = filtered[0].name;
-            }
+        if(selectedVoice && filtered.find(v=>v.name===selectedVoice.name)) vs.value=selectedVoice.name;
+        else if(filtered.length){
+            const googleFirst = filtered.find(v => isGoogleVoice(v));
+            if(googleFirst) vs.value = googleFirst.name;
+            else vs.value = filtered[0].name;
         }
         vs.addEventListener('change',e=>{
             selectedVoice=allVoices.find(v=>v.name===e.target.value)||null;
@@ -998,6 +1118,16 @@ function renderBsTab(t){
         $('bsPitch').addEventListener('input',function(){ttsPitch=parseFloat(this.value);$('bsPitchV').textContent=ttsPitch.toFixed(1);});
         $('bsReplay').addEventListener('click',()=>{if(bsCurrentWord)onSpeak(bsCurrentWord);else showToast('Tap a word first');});
         $('bsStop').addEventListener('click',()=>{window.speechSynthesis.cancel();showToast('⏹ Stopped');});
+        
+        // Manual pronounce in bottom sheet
+        $('bsManualPronounceBtn').addEventListener('click',()=>{
+            const word=$('bsManualPronounceInput').value.trim();
+            if(word) onSpeak(word);
+            else showToast('Type a word');
+        });
+        $('bsManualPronounceInput').addEventListener('keypress',e=>{
+            if(e.key==='Enter') $('bsManualPronounceBtn').click();
+        });
     }
     else if(t==='translate'){
         content.innerHTML=`
@@ -1044,15 +1174,7 @@ function renderBsTab(t){
             <div style="margin-bottom:16px;">
                 <label style="font-size:.75rem;color:var(--muted);font-weight:700;text-transform:uppercase;margin-bottom:8px;display:block;">🌐 Document Language</label>
                 <select id="bsLangSelect" style="width:100%;background:var(--card2);border:1px solid var(--border);border-radius:10px;color:var(--text);padding:10px;font-size:16px;outline:none;">
-                    <option value="hi">🇮🇳 Hindi</option><option value="bn">🇧🇩 Bengali</option>
-                    <option value="ta">🇮🇳 Tamil</option><option value="te">🇮🇳 Telugu</option>
-                    <option value="mr">🇮🇳 Marathi</option><option value="gu">🇮🇳 Gujarati</option>
-                    <option value="pa">🇮🇳 Punjabi</option><option value="ja">🇯🇵 Japanese</option>
-                    <option value="ru">🇷🇺 Russian</option><option value="en">🇺🇸 English</option>
-                    <option value="de">🇩🇪 German</option><option value="fr">🇫🇷 French</option>
-                    <option value="es">🇪🇸 Spanish</option><option value="zh">🇨🇳 Chinese</option>
-                    <option value="ar">🇸🇦 Arabic</option><option value="ko">🇰🇷 Korean</option>
-                    <option value="pt">🇧🇷 Portuguese</option><option value="it">🇮🇹 Italian</option>
+                    ${Array.from($('languageSelect')?.options||[]).map(opt=>`<option value="${opt.value}">${opt.text}</option>`).join('')}
                 </select>
             </div>
             <div style="background:var(--card2);border-radius:12px;padding:14px;font-size:.82rem;color:var(--muted);line-height:1.8;">
@@ -1062,7 +1184,7 @@ function renderBsTab(t){
                 <div>⬅ ➡ <strong style="color:var(--text);">Swipe</strong> left/right → Change page</div>
                 <div>🤏 <strong style="color:var(--text);">Pinch</strong> → Zoom in/out</div>
                 <div>📂 <strong style="color:var(--text);">PDF</strong> button → Load new PDF</div>
-                <div>📝 <strong style="color:var(--text);">Type</strong> a word in Meaning tab → Translate any word</div>
+                <div>📝 <strong style="color:var(--text);">Type</strong> a word in Voice/Meaning tab → Pronounce or translate any word</div>
             </div>`;
         $('bsLangSelect').value=currentLang;
         $('bsLangSelect').addEventListener('change',e=>{onLangChange(e.target.value);showToast('🌐 Language changed');});
