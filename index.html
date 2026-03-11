@@ -1,0 +1,1016 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="LinguaPDF">
+    <meta name="theme-color" content="#080810">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <title>LinguaPDF</title>
+    <style>
+        *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+        :root{
+            --primary:#7c6fff;--primary-glow:rgba(124,111,255,0.35);
+            --accent:#00e5ff;--accent2:#ff6fd8;
+            --dark:#080810;--card:rgba(22,22,46,0.92);--card2:rgba(12,12,32,0.96);
+            --border:rgba(124,111,255,0.22);--text:#e4e4ff;--muted:#7878aa;
+            --success:#00e676;--warning:#ffaa00;--radius:18px;
+            --safe-top:env(safe-area-inset-top,0px);--safe-bottom:env(safe-area-inset-bottom,0px);
+            --nav-h:65px;--nav-total:calc(var(--nav-h) + var(--safe-bottom));
+            --reader-top:calc(56px + var(--safe-top));
+        }
+        html,body{height:100%;overflow-x:hidden;overscroll-behavior-y:none;}
+        body{font-family:'Inter',sans-serif;background:var(--dark);color:var(--text);min-height:100vh}
+        body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 80% 60% at 10% 10%,rgba(124,111,255,0.12) 0%,transparent 60%),radial-gradient(ellipse 60% 50% at 90% 80%,rgba(0,229,255,0.08) 0%,transparent 55%);pointer-events:none;z-index:0}
+
+        .btn{display:inline-flex;align-items:center;gap:6px;background:linear-gradient(135deg,var(--primary),#5248c8);color:#fff;border:none;border-radius:22px;padding:10px 20px;font-weight:600;font-size:.85rem;font-family:'Inter',sans-serif;cursor:pointer;transition:transform .18s,box-shadow .18s;box-shadow:0 4px 18px rgba(124,111,255,.3);min-height:44px;white-space:nowrap;min-width:44px;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+        .btn:active{transform:scale(.96)}
+        .btn:disabled{opacity:.45;cursor:not-allowed;transform:none;box-shadow:none}
+        .btn-sm{padding:8px 14px;font-size:.8rem;min-height:40px}
+        .btn-zoom{padding:6px 12px;min-height:36px;font-size:1rem;font-weight:700;border-radius:10px;background:rgba(124,111,255,.15);border:1px solid var(--border);color:var(--text);box-shadow:none;cursor:pointer;font-family:'Inter',sans-serif;touch-action:manipulation}
+
+        /* ═══ DESKTOP ═══ */
+        .desktop-layout{max-width:1440px;margin:0 auto;padding:20px 20px calc(20px + var(--safe-bottom));display:flex;flex-direction:column;gap:18px;position:relative;z-index:1}
+        .hero{text-align:center;padding:4px 0}
+        .hero h1{font-size:clamp(1.3rem,4vw,2.4rem);font-weight:700;background:linear-gradient(135deg,#fff 20%,var(--primary) 55%,var(--accent) 90%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text; cursor:pointer; display:inline-block;}
+        .hero h1:active{opacity:0.8}
+        .hero p{color:var(--muted);font-size:.82rem;margin-top:5px}
+        .header{display:flex;flex-wrap:wrap;gap:12px;background:var(--card);backdrop-filter:blur(20px);border:1px solid var(--border);border-radius:var(--radius);padding:16px;align-items:flex-end;box-shadow:0 8px 40px rgba(0,0,0,.45)}
+        .control-group{flex:1 1 160px;display:flex;flex-direction:column;gap:5px}
+        .control-group label{font-size:.68rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:1px}
+        select,input[type="file"]{width:100%;background:var(--card2);border:1px solid var(--border);border-radius:10px;color:var(--text);padding:10px 12px;font-size:max(16px,.85rem);font-family:'Inter',sans-serif;cursor:pointer;outline:none;transition:border-color .2s}
+        select:focus,input[type="file"]:focus{border-color:var(--primary)}
+        .main{display:flex;gap:18px;flex-wrap:wrap;align-items:flex-start}
+        .pdf-panel{flex:2 1 560px;background:var(--card);backdrop-filter:blur(18px);border:1px solid var(--border);border-radius:var(--radius);padding:14px;display:flex;flex-direction:column;gap:12px;box-shadow:0 8px 40px rgba(0,0,0,.4)}
+        .pdf-toolbar{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+        .nav-group{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+        .zoom-group{display:flex;align-items:center;gap:6px}
+        .page-badge{background:rgba(124,111,255,.15);border:1px solid rgba(124,111,255,.3);padding:6px 14px;border-radius:20px;font-weight:600;font-size:.78rem;color:var(--primary)}
+        .zoom-badge{background:rgba(0,229,255,.1);border:1px solid rgba(0,229,255,.25);padding:5px 12px;border-radius:20px;font-size:.75rem;font-weight:700;color:var(--accent);min-width:58px;text-align:center}
+        #pdfViewer{width:100%;overflow:auto;background:#09091a;border-radius:12px;max-height:calc(100dvh - 300px);min-height:300px;border:1px solid rgba(255,255,255,.04);-webkit-overflow-scrolling:touch}
+        .pdf-container{display:flex;flex-direction:column;align-items:center;padding:12px;gap:12px}
+        .pdf-placeholder{color:var(--muted);text-align:center;padding:50px 30px;display:flex;flex-direction:column;align-items:center;gap:12px}
+        .page-wrapper{position:relative;border-radius:8px;overflow:hidden;box-shadow:0 8px 32px rgba(0,0,0,.6)}
+        .sidebar{flex:1 1 280px;display:flex;flex-direction:column;gap:16px;position:sticky;top:20px}
+        .panel{background:var(--card);backdrop-filter:blur(18px);border:1px solid var(--border);border-radius:var(--radius);padding:18px;box-shadow:0 8px 40px rgba(0,0,0,.35)}
+        .panel-title{display:flex;align-items:center;gap:8px;font-size:.74rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:1.2px;margin-bottom:12px}
+        .panel-title .dot{width:8px;height:8px;border-radius:50%;background:var(--primary);box-shadow:0 0 6px var(--primary)}
+        .translation-box{background:var(--card2);border-radius:10px;padding:14px;min-height:100px;line-height:1.7;font-size:.89rem;word-break:break-word;border:1px solid rgba(255,255,255,.04)}
+        .manual-translate{display:flex;gap:6px;margin-bottom:10px;}
+        .manual-translate input{flex:1;background:var(--card2);border:1px solid var(--border);border-radius:8px;color:var(--text);padding:8px 12px;font-size:.85rem;outline:none;}
+        .manual-translate input:focus{border-color:var(--accent);}
+        .pronunc-box{background:rgba(124,111,255,.08);border:1px solid rgba(124,111,255,.2);border-radius:10px;padding:10px 14px;font-size:.86rem;color:var(--primary);margin-bottom:8px;display:none}
+        .pronunc-box .word{font-size:1.05rem;font-weight:600}
+        .slider-group{display:flex;flex-direction:column;gap:4px;margin-top:8px}
+        .slider-group label{font-size:.71rem;color:var(--muted);display:flex;justify-content:space-between}
+        .slider-group input[type="range"]{width:100%;accent-color:var(--primary);cursor:pointer;height:4px}
+        .history-list{list-style:none;display:flex;flex-direction:column;gap:7px;max-height:180px;overflow-y:auto}
+        .history-item{background:var(--card2);border:1px solid rgba(255,255,255,.05);border-radius:8px;padding:8px 11px;font-size:.8rem;cursor:pointer;transition:border-color .2s,background .2s;display:flex;align-items:center;gap:7px}
+        .history-item:hover{border-color:var(--primary);background:rgba(124,111,255,.1)}
+        .h-type{font-size:.62rem;padding:1px 5px;border-radius:7px;font-weight:700;flex-shrink:0}
+        .h-type.speak{background:rgba(124,111,255,.2);color:var(--primary)}
+        .h-type.translate{background:rgba(0,229,255,.15);color:var(--accent)}
+        .h-text{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;color:var(--muted)}
+        .history-empty{color:var(--muted);font-style:italic;font-size:.82rem;text-align:center;padding:10px}
+
+        /* ═══ TEXT LAYER - SHARED ═══ */
+        .textLayer{position:absolute;top:0;left:0;width:100%;height:100%;z-index:5;
+            user-select:text;-webkit-user-select:text;
+            cursor:text;pointer-events:auto;}
+        .textLayer span{color:transparent;position:absolute;white-space:pre;
+            cursor:pointer;border-radius:3px;transition:background .15s;
+            -webkit-tap-highlight-color:rgba(124,111,255,0.25);
+            user-select:text;-webkit-user-select:text;}
+        .textLayer span:hover{background:rgba(124,111,255,.2)!important}
+        .textLayer span.tapped{background:rgba(0,229,255,.4)!important}
+        .textLayer span.long-pressing{background:rgba(255,111,216,.3)!important}
+        .textLayer span.selected-word{background:rgba(124,111,255,.35)!important;outline:1px solid var(--primary);}
+
+        /* ═══ MOBILE ═══ */
+        .mobile-topbar{display:none;position:fixed;top:0;left:0;right:0;z-index:600;height:var(--reader-top);padding-top:var(--safe-top);background:rgba(8,8,16,.97);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);align-items:center;justify-content:space-between;padding-left:16px;padding-right:16px;}
+        .mobile-topbar .tb-title{font-size:1.05rem;font-weight:700;background:linear-gradient(135deg,#fff,var(--primary));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text; cursor:pointer;}
+        .tb-topbtn{background:rgba(124,111,255,.15);border:1px solid var(--border);color:var(--text);border-radius:10px;padding:5px 11px;font-size:.78rem;cursor:pointer;font-family:'Inter',sans-serif;font-weight:600;touch-action:manipulation;}
+
+        .mobile-start-screen{display:none;position:fixed;top:var(--reader-top);left:0;right:0;bottom:var(--nav-total);z-index:550;background:var(--dark);padding:20px;flex-direction:column;gap:12px;overflow-y:auto;}
+        .mobile-start-screen h2{font-size:1.4rem;text-align:center;margin-bottom:2px;background:linear-gradient(135deg,var(--primary),var(--accent));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text; cursor:pointer;}
+        .mobile-start-screen .hint-row{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin-bottom:4px;}
+        .mobile-start-screen .hint-chip{background:rgba(124,111,255,.1);border:1px solid rgba(124,111,255,.25);border-radius:20px;padding:3px 10px;font-size:.7rem;color:var(--muted);}
+        /* 🔽 EXTRA TIGHT SPACING INSIDE CARD 🔽 */
+        .mobile-start-screen .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:8px;display:flex;flex-direction:column;gap:2px;} /* reduced to 2px */
+        .mobile-start-screen .card .control-group { gap: 1px; } 
+        .mobile-start-screen .card .control-group label { font-size:0.7rem; margin-bottom:0 !important; } 
+        .mobile-start-screen .card .control-group select,
+        .mobile-start-screen .card .control-group input[type="range"] { margin-top: 0; padding: 6px 8px; font-size:14px; } /* smaller select */
+        .mobile-start-screen .card > div:last-child { margin-bottom: 0; } 
+        .mobile-start-screen .card input[type="file"] { margin-top: 0; padding: 6px 8px; font-size:14px; }
+
+        .book-reader{display:none;position:fixed;top:var(--reader-top);left:0;right:0;bottom:var(--nav-total);z-index:500;background:#0a0a18;overflow:hidden;touch-action:pan-x pan-y;}
+        .book-pages{width:100%;height:100%;position:relative;overflow:hidden}
+        .book-page{position:absolute;inset:0;display:block;overflow:auto;-webkit-overflow-scrolling:touch;background:#0a0a18;transition:transform .38s cubic-bezier(.4,0,.2,1),opacity .25s ease;will-change:transform,opacity;}
+        .book-page .textLayer{position:absolute}
+        .reading-progress{position:absolute;bottom:0;left:0;height:3px;background:linear-gradient(90deg,var(--primary),var(--accent));transition:width .3s ease;z-index:15;border-radius:0 2px 2px 0}
+
+        .mobile-nav-controls{position:absolute;bottom:15px;left:50%;transform:translateX(-50%);display:flex;gap:8px;z-index:40;background:rgba(12,12,32,0.88);backdrop-filter:blur(8px);padding:6px 12px;border-radius:20px;border:1px solid rgba(255,255,255,0.1);align-items:center;}
+        .tb-icon-btn{background:rgba(124,111,255,.12);border:1px solid var(--border);color:var(--text);border-radius:10px;padding:5px 10px;font-size:.9rem;cursor:pointer;font-weight:bold;font-family:'Inter',sans-serif;touch-action:manipulation;-webkit-tap-highlight-color:transparent;}
+        .tb-zoom-badge{font-size:.75rem;font-weight:700;color:var(--accent);padding:0 4px;min-width:42px;text-align:center;}
+        .mobile-page-info{font-size:.7rem;color:var(--muted);font-weight:600;padding:0 4px;white-space:nowrap;}
+        .divider-v{width:1px;height:20px;background:rgba(255,255,255,0.15);margin:0 2px;}
+
+        .bottom-nav{display:none;position:fixed;left:0;right:0;bottom:0;z-index:700;background:rgba(8,8,22,.97);backdrop-filter:blur(20px);border-top:1px solid var(--border);height:var(--nav-total);padding-bottom:var(--safe-bottom);transform:translate3d(0,0,0);}
+        .bn-inner{display:flex;justify-content:space-around;align-items:center;height:var(--nav-h);padding:0 10px;}
+        .bn-btn{display:flex;flex-direction:column;align-items:center;gap:3px;background:none;border:none;color:var(--muted);font-size:.65rem;font-weight:600;cursor:pointer;padding:8px 10px;border-radius:12px;transition:color .2s,transform .2s;font-family:'Inter',sans-serif;touch-action:manipulation;}
+        .bn-btn .bn-icon{font-size:1.3rem;}
+        .bn-btn.active{color:var(--primary);transform:scale(1.05);}
+        .bn-btn.center-btn{color:var(--accent);transform:scale(1.1);margin-top:-4px;}
+        .bn-btn.center-btn .bn-icon{font-size:1.55rem;}
+
+        /* Bottom Sheet */
+        .bs-overlay{display:none;position:fixed;inset:0;z-index:800;background:rgba(0,0,0,.5);backdrop-filter:blur(4px);}
+        .bs-overlay.show{display:block}
+        .bottom-sheet{position:fixed;left:0;right:0;bottom:0;z-index:801;background:#13132a;border:1px solid var(--border);border-radius:22px 22px 0 0;padding:0 0 calc(20px + var(--safe-bottom));transform:translateY(100%);transition:transform .32s cubic-bezier(.32,.72,0,1);max-height:82dvh;overflow-y:auto;will-change:transform;}
+        .bottom-sheet.open{transform:translateY(0)}
+        .bs-handle{width:40px;height:4px;background:rgba(255,255,255,.15);border-radius:3px;margin:12px auto 4px}
+        .bs-tabs{display:flex;border-bottom:1px solid var(--border);margin:0 16px;overflow-x:auto;}
+        .bs-tab{flex:1;padding:12px 5px;text-align:center;font-size:.78rem;font-weight:600;color:var(--muted);cursor:pointer;border:none;background:none;border-bottom:2px solid transparent;white-space:nowrap;font-family:'Inter',sans-serif;}
+        .bs-tab.active{color:var(--primary);border-bottom-color:var(--primary)}
+        .bs-content{padding:16px}
+
+        /* Feedback Modal */
+        .feedback-modal{display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(0.9);background:var(--card);border:1px solid var(--border);border-radius:16px;padding:24px;z-index:900;width:85%;max-width:320px;text-align:center;box-shadow:0 10px 40px rgba(0,0,0,0.6);transition:transform 0.2s,opacity 0.2s;opacity:0;}
+        .feedback-modal.show{display:block;transform:translate(-50%,-50%) scale(1);opacity:1;}
+        .feedback-modal h3{margin-bottom:10px;color:var(--text);}
+        .feedback-modal p{font-size:0.85rem;color:var(--muted);margin-bottom:20px;}
+        .feedback-modal a{display:inline-block;background:rgba(0,229,255,.1);border:1px solid rgba(0,229,255,.3);color:var(--accent);padding:10px 15px;border-radius:10px;text-decoration:none;font-weight:bold;font-size:0.9rem;margin-bottom:15px;width:100%;}
+        .feedback-modal .btn{width:100%;background:rgba(255,255,255,0.1);color:var(--text);border:none;}
+
+        /* Long Press Ring */
+        .lp-wrap{position:fixed;inset:0;pointer-events:none;z-index:9998;display:none}
+        .lp-ring{position:absolute;width:56px;height:56px;border-radius:50%;border:3px solid rgba(255,111,216,.2)}
+        .lp-arc{position:absolute;inset:0;border-radius:50%;border:3px solid transparent;border-top-color:var(--accent2)}
+        .lp-arc.spinning{animation:spinArc 3s linear forwards}
+        @keyframes spinArc{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+
+        /* Toast */
+        .toast{position:fixed;top:calc(var(--reader-top) + 10px);left:50%;transform:translateX(-50%) translateY(-10px);background:rgba(22,22,46,.97);border:1px solid var(--border);border-radius:22px;padding:9px 18px;font-size:.82rem;color:var(--text);z-index:2000;white-space:nowrap;opacity:0;transition:opacity .22s,transform .22s;pointer-events:none;backdrop-filter:blur(12px);box-shadow:0 4px 20px rgba(0,0,0,.5);}
+        .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+        @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+
+        @media(max-width:768px){
+            .desktop-layout{display:none!important}
+            .mobile-topbar{display:flex}
+            .mobile-start-screen.active{display:flex}
+            .book-reader.active{display:block}
+            .bottom-nav{display:block}
+        }
+        @media(min-width:769px){
+            .mobile-topbar,.book-reader,.bottom-nav,.mobile-start-screen{display:none!important}
+            .desktop-layout{display:flex!important}
+            body{padding:0}
+        }
+    </style>
+</head>
+<body>
+
+<div class="toast" id="toast"></div>
+<div class="lp-wrap" id="lpWrap"><div class="lp-ring" id="lpRing"><div class="lp-arc" id="lpArc"></div></div></div>
+<div class="bs-overlay" id="bsOverlay"></div>
+
+<div class="feedback-modal" id="feedbackModal">
+    <h3>💬 Send Feedback</h3>
+    <p>We'd love to hear your suggestions or bug reports!</p>
+    <a href="mailto:laafeiakresearch@gmail.com?subject=LinguaPDF Feedback">✉️ laafeiakresearch@gmail.com</a>
+    <button class="btn" onclick="closeFeedbackModal()">Close</button>
+</div>
+
+<!-- Mobile Top Bar -->
+<div class="mobile-topbar">
+    <span class="tb-title" id="mobileTitle">📖 LinguaPDF</span>
+    <div style="display:flex;gap:4px;">
+        <button class="tb-topbtn" id="tbLangBtn">🌐 EN</button>
+        <button class="tb-topbtn" id="tbActivateBtn">🔊 Activate</button>
+    </div>
+</div>
+
+<!-- Mobile Start Screen -->
+<div class="mobile-start-screen active" id="mobileStartScreen">
+    <h2 id="startTitle">📖 LinguaPDF</h2>
+    <div class="hint-row">
+        <span class="hint-chip">👆 Tap = Speak</span>
+        <span class="hint-chip">👆 Hold 3s = Translate & Speak</span>
+        <span class="hint-chip">⬅➡ Swipe = Page</span>
+    </div>
+    <div class="card">
+        <div class="control-group">
+            <label style="font-size:0.7rem;">🌐 Document Language</label>
+            <select id="langSelectMobile">
+                <option value="hi">🇮🇳 Hindi</option><option value="bn">🇧🇩 Bengali</option>
+                <option value="ta">🇮🇳 Tamil</option><option value="te">🇮🇳 Telugu</option>
+                <option value="mr">🇮🇳 Marathi</option><option value="gu">🇮🇳 Gujarati</option>
+                <option value="pa">🇮🇳 Punjabi</option><option value="ja">🇯🇵 Japanese</option>
+                <option value="ru">🇷🇺 Russian</option><option value="en" selected>🇺🇸 English</option>
+                <option value="de">🇩🇪 German</option><option value="fr">🇫🇷 French</option>
+                <option value="es">🇪🇸 Spanish</option><option value="zh">🇨🇳 Chinese</option>
+                <option value="ar">🇸🇦 Arabic</option><option value="ko">🇰🇷 Korean</option>
+                <option value="pt">🇧🇷 Portuguese</option><option value="it">🇮🇹 Italian</option>
+            </select>
+        </div>
+        <div class="control-group">
+            <label style="font-size:0.7rem;">🎤 Pronunciation Voice</label>
+            <select id="voiceSelectMobile"><option value="">-- Select voice --</option></select>
+            <div id="voiceWarnMobile" style="color:var(--warning);font-size:.68rem;"></div>
+        </div>
+        <div class="control-group">
+            <label style="font-size:.68rem;display:flex;justify-content:space-between;">Speed <span id="startRateVal">1.0×</span></label>
+            <input type="range" id="startRateSlider" min=".5" max="2" step=".1" value="1.0" style="width:100%;accent-color:var(--primary);">
+        </div>
+        <div>
+            <label style="font-size:0.7rem;color:var(--primary);font-weight:bold;">📄 Upload PDF to Start</label>
+            <input type="file" id="fileInputMobile" accept=".pdf" style="border-color:var(--primary);background:rgba(124,111,255,0.05);">
+        </div>
+    </div>
+</div>
+
+<!-- Book Reader -->
+<div class="book-reader" id="bookReader">
+    <div class="book-pages" id="bookPages">
+        <div class="book-page current" id="bookPage"></div>
+    </div>
+    <div class="mobile-nav-controls">
+        <button class="tb-icon-btn" id="tbPrev">⬅</button>
+        <span class="mobile-page-info" id="mobilePageInfo">1 / 1</span>
+        <button class="tb-icon-btn" id="tbNext">➡</button>
+        <div class="divider-v"></div>
+        <button class="tb-icon-btn" id="tbZoomOut">−</button>
+        <span class="tb-zoom-badge" id="tbZoomBadge">100%</span>
+        <button class="tb-icon-btn" id="tbZoomIn">＋</button>
+        <button class="tb-icon-btn" id="tbZoomReset" style="font-size:.65rem;padding:5px 8px;">↺</button>
+    </div>
+    <div class="reading-progress" id="readingProgress" style="width:0%"></div>
+</div>
+
+<!-- Bottom Sheet -->
+<div class="bottom-sheet" id="bottomSheet">
+    <div class="bs-handle"></div>
+    <div class="bs-tabs">
+        <button class="bs-tab active" id="bsTabSpeak" data-tab="speak">🎙️ Voice</button>
+        <button class="bs-tab" id="bsTabTranslate" data-tab="translate">📘 Meaning</button>
+        <button class="bs-tab" id="bsTabHistory" data-tab="history">🕑 History</button>
+        <button class="bs-tab" id="bsTabSettings" data-tab="settings">⚙️ Settings</button>
+    </div>
+    <div class="bs-content" id="bsContent"></div>
+</div>
+
+<!-- Bottom Nav -->
+<nav class="bottom-nav">
+    <div class="bn-inner">
+        <button class="bn-btn" id="bnChangePdf"><span class="bn-icon">📂</span>PDF</button>
+        <button class="bn-btn" id="bnHistory"><span class="bn-icon">🕑</span>History</button>
+        <button class="bn-btn center-btn" id="bnTools"><span class="bn-icon">🎤</span>Voice</button>
+        <button class="bn-btn" id="bnTranslate"><span class="bn-icon">📘</span>Meaning</button>
+        <button class="bn-btn" id="bnFeedback"><span class="bn-icon">💬</span>More</button>
+    </div>
+</nav>
+
+<!-- ═══ DESKTOP LAYOUT ═══ -->
+<div class="desktop-layout" id="desktopLayout">
+    <div class="hero">
+        <h1 id="desktopTitle">📖 LinguaPDF</h1>
+        <p>Click to pronounce · Double-click to translate · Scroll or ± to zoom</p>
+    </div>
+    <div class="header">
+        <div class="control-group">
+            <label>🌐 Language</label>
+            <select id="languageSelect">
+                <option value="hi">🇮🇳 Hindi</option><option value="bn">🇧🇩 Bengali</option>
+                <option value="ta">🇮🇳 Tamil</option><option value="te">🇮🇳 Telugu</option>
+                <option value="mr">🇮🇳 Marathi</option><option value="gu">🇮🇳 Gujarati</option>
+                <option value="pa">🇮🇳 Punjabi</option><option value="ja">🇯🇵 Japanese</option>
+                <option value="ru">🇷🇺 Russian</option><option value="en" selected>🇺🇸 English</option>
+                <option value="de">🇩🇪 German</option><option value="fr">🇫🇷 French</option>
+                <option value="es">🇪🇸 Spanish</option><option value="zh">🇨🇳 Chinese</option>
+                <option value="ar">🇸🇦 Arabic</option><option value="ko">🇰🇷 Korean</option>
+                <option value="pt">🇧🇷 Portuguese</option><option value="it">🇮🇹 Italian</option>
+            </select>
+        </div>
+        <div class="control-group" style="position:relative;">
+            <label>🎤 Voice</label>
+            <div style="display:flex; gap:5px;">
+                <select id="voiceSelect" disabled style="flex:1;"><option value="">-- Voice --</option></select>
+                <button class="btn-zoom" id="voiceSampleDesktop" title="Hear voice sample">🔊</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <label>📄 Upload PDF</label>
+            <input type="file" id="fileInput" accept=".pdf">
+        </div>
+        <button class="btn" id="activateBtn">🔊 Activate Voice</button>
+        <button class="btn btn-sm" id="desktopFeedbackBtn">💬 Feedback</button>
+    </div>
+    <div class="main">
+        <div class="pdf-panel">
+            <div class="pdf-toolbar">
+                <div class="nav-group">
+                    <button class="btn btn-sm" id="prevPage" disabled>⬅ Prev</button>
+                    <span class="page-badge" id="pageInfo">1 / 1</span>
+                    <button class="btn btn-sm" id="nextPage" disabled>Next ➡</button>
+                </div>
+                <div class="zoom-group">
+                    <button class="btn-zoom" id="zoomOut">−</button>
+                    <span class="zoom-badge" id="zoomBadge">100%</span>
+                    <button class="btn-zoom" id="zoomIn">＋</button>
+                    <button class="btn-zoom" id="zoomReset" style="font-size:.72rem;padding:5px 10px">Reset</button>
+                </div>
+            </div>
+            <div id="pdfViewer">
+                <div class="pdf-container" id="pdfContainer">
+                    <div class="pdf-placeholder">
+                        <span style="font-size:3rem;opacity:0.5">📂</span>
+                        <p>Upload a PDF to start reading</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="sidebar">
+            <div class="panel">
+                <div class="panel-title"><span class="dot"></span> Pronunciation</div>
+                <div class="pronunc-box" id="pronuncBox"><div class="word" id="pronuncWord"></div></div>
+                <div style="color:var(--muted);font-style:italic;font-size:.83rem" id="speakPlaceholder">Click a word to hear it…</div>
+                <div class="slider-group" id="ttsSliders" style="display:none">
+                    <label>Speed <span id="rateVal">1.0×</span></label>
+                    <input type="range" id="rateSlider" min=".5" max="2" step=".1" value="1.0">
+                    <label style="margin-top:6px">Pitch <span id="pitchVal">1.0</span></label>
+                    <input type="range" id="pitchSlider" min=".5" max="2" step=".1" value="1.0">
+                </div>
+            </div>
+            <div class="panel">
+                <div class="panel-title"><span class="dot" style="background:var(--accent)"></span> English Meaning</div>
+                <div class="manual-translate">
+                    <input type="text" id="manualTranslateInput" placeholder="Type a word...">
+                    <button class="btn-zoom" id="manualTranslateBtn" style="padding:6px 12px;">🔍</button>
+                </div>
+                <div class="translation-box" id="translationResult"><span style="color:var(--muted);font-style:italic;font-size:.84rem">Double-click a word or type above to translate…</span></div>
+            </div>
+            <div class="panel">
+                <div class="panel-title"><span class="dot" style="background:var(--accent2)"></span> History</div>
+                <ul class="history-list" id="historyList"><li class="history-empty">No activity yet…</li></ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script>
+(function(){
+'use strict';
+pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+const $=id=>document.getElementById(id);
+const isMobile=()=>window.innerWidth<=768;
+
+// ── State ────────────────────────────────────────────────────────────────────
+let pdfDoc=null,currentPage=1,totalPages=0;
+let allVoices=[],selectedVoice=null;
+let isActivated=false,currentLang='en';
+let historyArr=[];
+let bsActiveTab='speak',bsCurrentWord='',bsCurrentTranslation='';
+let ttsRate=1.0,ttsPitch=1.0;
+let selectedSpan=null;
+
+let desktopScale=1.5;
+const DESKTOP_BASE=1.5,DESKTOP_MIN=0.5,DESKTOP_MAX=4.0,DESKTOP_STEP=0.25;
+let mobileUserScale=1.0;
+const MOBILE_MIN=0.5,MOBILE_MAX=4.0,MOBILE_STEP=0.25;
+
+// ── Sample phrases for voice preview ─────────────────────────────────────────
+const samplePhrases = {
+  'hi': 'नमस्ते, यह एक नमूना है।',
+  'bn': 'নমস্কার, এটি একটি নমুনা।',
+  'ta': 'வணக்கம், இது ஒரு மாதிரி.',
+  'te': 'నమస్కారం, ఇది నమూనా.',
+  'mr': 'नमस्कार, हा नमुना आहे.',
+  'gu': 'નમસ્તે, આ એક નમૂનો છે.',
+  'pa': 'ਸਤ ਸ੍ਰੀ ਅਕਾਲ, ਇਹ ਇੱਕ ਨਮੂਨਾ ਹੈ।',
+  'ja': 'こんにちは、これはサンプルです。',
+  'ru': 'Здравствуйте, это образец.',
+  'en': 'Hello, this is a sample.',
+  'de': 'Hallo, das ist ein Beispiel.',
+  'fr': 'Bonjour, ceci est un exemple.',
+  'es': 'Hola, esto es una muestra.',
+  'zh': '你好，这是一个样本。',
+  'ar': 'مرحبا، هذه عينة.',
+  'ko': '안녕하세요, 이것은 샘플입니다.',
+  'pt': 'Olá, isto é uma amostra.',
+  'it': 'Ciao, questo è un esempio.'
+};
+function playVoiceSample(lang, voiceObj) {
+    const phrase = samplePhrases[lang] || samplePhrases['en'];
+    if (!voiceObj && selectedVoice) voiceObj = selectedVoice;
+    if (!voiceObj) { showToast('⚠️ No voice selected'); return; }
+    window.speechSynthesis.cancel();
+    const utter = new SpeechSynthesisUtterance(phrase);
+    utter.voice = voiceObj;
+    utter.rate = 1.0;
+    utter.pitch = 1.0;
+    window.speechSynthesis.speak(utter);
+    showToast('🔊 Voice sample');
+}
+
+// ── Helpers ──────────────────────────────────────────────────────────────────
+function escHtml(s){return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+function showToast(msg,dur=2200){const t=$('toast');clearTimeout(t._t);t.textContent=msg;t.classList.add('show');t._t=setTimeout(()=>t.classList.remove('show'),dur);}
+function updateZoomBadges(){
+    if($('zoomBadge'))$('zoomBadge').textContent=Math.round((desktopScale/DESKTOP_BASE)*100)+'%';
+    if($('tbZoomBadge'))$('tbZoomBadge').textContent=Math.round(mobileUserScale*100)+'%';
+}
+
+// ── Restart / Go Home ────────────────────────────────────────────────────────
+function restartApp(){
+    // Close PDF
+    if(pdfDoc){
+        try{ pdfDoc.destroy(); }catch(e){}
+        pdfDoc=null;
+    }
+    currentPage=1; totalPages=0;
+    // Reset UI
+    if(isMobile()){
+        $('bookReader').classList.remove('active');
+        $('mobileStartScreen').classList.add('active');
+    } else {
+        // Desktop: clear PDF view
+        $('pdfContainer').innerHTML = '<div class="pdf-placeholder"><span style="font-size:3rem;opacity:0.5">📂</span><p>Upload a PDF to start reading</p></div>';
+        $('prevPage').disabled=true; $('nextPage').disabled=true; $('pageInfo').textContent='1 / 1';
+        $('zoomBadge').textContent='100%';
+    }
+    // Reset file inputs (optional)
+    if($('fileInput')) $('fileInput').value='';
+    if($('fileInputMobile')) $('fileInputMobile').value='';
+    showToast('🏠 Back to start');
+}
+
+// Add click handlers to titles
+$('mobileTitle')?.addEventListener('click', restartApp);
+$('startTitle')?.addEventListener('click', restartApp);
+$('desktopTitle')?.addEventListener('click', restartApp);
+
+// ── Activate Voice ────────────────────────────────────────────────────────────
+function activate(){
+    if(!isActivated){
+        const u=new SpeechSynthesisUtterance(' ');u.volume=0;
+        window.speechSynthesis.speak(u);isActivated=true;
+        showToast('✅ Voice Activated!');
+        if($('tbActivateBtn'))$('tbActivateBtn').textContent='✅ Active';
+    }
+}
+$('activateBtn')&&$('activateBtn').addEventListener('click',activate);
+$('tbActivateBtn')&&$('tbActivateBtn').addEventListener('click',activate);
+
+// ── Voices ────────────────────────────────────────────────────────────────────
+function loadVoices(){
+    allVoices=window.speechSynthesis.getVoices();
+    if(!allVoices.length){setTimeout(loadVoices,300);return;}
+    updateVoiceDropdowns();
+}
+function updateVoiceDropdowns(){
+    const filtered=allVoices.filter(v=>v.lang.startsWith(currentLang)||v.lang.startsWith(currentLang+'-'));
+    const langNames={'hi':'HI','bn':'BN','ta':'TA','te':'TE','mr':'MR','gu':'GU','pa':'PA','ja':'JA',
+        'ru':'RU','en':'EN','de':'DE','fr':'FR','es':'ES','zh':'ZH','ar':'AR','ko':'KO','pt':'PT','it':'IT'};
+    if($('tbLangBtn'))$('tbLangBtn').textContent='🌐 '+(langNames[currentLang]||currentLang.toUpperCase());
+    ['voiceSelect','voiceSelectMobile'].forEach(id=>{
+        const el=$(id);if(!el)return;
+        el.innerHTML='<option value="">-- Select voice --</option>';
+        if(!filtered.length){el.disabled=true;if(id==='voiceSelectMobile')$('voiceWarnMobile').textContent='⚠ No voices for this language';}
+        else{
+            el.disabled=false;
+            if(id==='voiceSelectMobile')$('voiceWarnMobile').textContent='';
+            filtered.forEach(v=>{const o=document.createElement('option');o.value=v.name;o.textContent=`${v.name} (${v.lang})`;el.appendChild(o);});
+            el.value=filtered[0].name;
+        }
+    });
+    selectedVoice=filtered.length?filtered[0]:null;
+}
+window.speechSynthesis.onvoiceschanged=loadVoices;loadVoices();
+
+function onLangChange(val){
+    currentLang=val;
+    if($('languageSelect'))$('languageSelect').value=val;
+    if($('langSelectMobile'))$('langSelectMobile').value=val;
+    updateVoiceDropdowns();
+}
+$('languageSelect')&&$('languageSelect').addEventListener('change',e=>onLangChange(e.target.value));
+$('langSelectMobile')&&$('langSelectMobile').addEventListener('change',e=>onLangChange(e.target.value));
+['voiceSelect','voiceSelectMobile'].forEach(id=>{
+    $(id)&&$(id).addEventListener('change',e=>{selectedVoice=allVoices.find(v=>v.name===e.target.value)||null;});
+});
+
+// Voice sample buttons
+$('voiceSampleDesktop')&&$('voiceSampleDesktop').addEventListener('click',()=>{
+    if(!selectedVoice){showToast('⚠️ Select a voice first');return;}
+    playVoiceSample(currentLang, selectedVoice);
+});
+
+// ── Desktop Feedback ─────────────────────────────────────────────────────────
+$('desktopFeedbackBtn')&&$('desktopFeedbackBtn').addEventListener('click',()=>{
+    $('feedbackModal').classList.add('show');
+    $('bsOverlay').classList.add('show');
+});
+window.closeFeedbackModal=function(){
+    $('feedbackModal').classList.remove('show');
+    $('bsOverlay').classList.remove('show');
+};
+
+// Rate sliders
+$('rateSlider')&&$('rateSlider').addEventListener('input',function(){ttsRate=parseFloat(this.value);$('rateVal').textContent=ttsRate.toFixed(1)+'×';});
+$('pitchSlider')&&$('pitchSlider').addEventListener('input',function(){ttsPitch=parseFloat(this.value);$('pitchVal').textContent=ttsPitch.toFixed(1);});
+$('startRateSlider')&&$('startRateSlider').addEventListener('input',function(){ttsRate=parseFloat(this.value);$('startRateVal').textContent=ttsRate.toFixed(1)+'×';});
+
+// ── Manual Translation (Desktop) ─────────────────────────────────────────────
+$('manualTranslateBtn')&&$('manualTranslateBtn').addEventListener('click',()=>{
+    const word=$('manualTranslateInput').value.trim();
+    if(word){
+        bsCurrentWord=word;
+        addHistory(word,'translate');
+        translateText(word,currentLang, false);
+    } else showToast('Type a word');
+});
+$('manualTranslateInput')&&$('manualTranslateInput').addEventListener('keypress',e=>{
+    if(e.key==='Enter') $('manualTranslateBtn').click();
+});
+
+// ── PDF Loading ───────────────────────────────────────────────────────────────
+$('fileInput')&&$('fileInput').addEventListener('change',e=>{if(e.target.files[0])loadPDF(e.target.files[0]);});
+$('fileInputMobile')&&$('fileInputMobile').addEventListener('change',e=>{if(e.target.files[0])loadPDF(e.target.files[0]);});
+
+async function loadPDF(file){
+    showToast('⏳ Loading PDF…');
+    try{
+        const buf=await file.arrayBuffer();
+        if(pdfDoc)await pdfDoc.destroy();
+        pdfDoc=await pdfjsLib.getDocument({data:buf}).promise;
+        totalPages=pdfDoc.numPages;currentPage=1;
+        mobileUserScale=1.0;desktopScale=DESKTOP_BASE;
+        updateZoomBadges();updateNavButtons();
+        if(isMobile()){
+            $('mobileStartScreen').classList.remove('active');
+            $('bookReader').classList.add('active');
+            await renderBookPage(currentPage);
+        }else{
+            await renderDesktopPage(currentPage);
+        }
+        showToast(`✅ PDF Loaded! (${totalPages} pages)`);
+    }catch(err){showToast('❌ Failed to load PDF');console.error(err);}
+}
+
+// ── Mobile Bottom Nav ─────────────────────────────────────────────────────────
+$('bnChangePdf').addEventListener('click',()=>{$('fileInputMobile').click();});
+$('bnTools').addEventListener('click',()=>openBottomSheet('speak'));
+$('bnHistory').addEventListener('click',()=>openBottomSheet('history'));
+$('bnTranslate').addEventListener('click',()=>openBottomSheet('translate'));
+$('bnFeedback').addEventListener('click',()=>{
+    $('feedbackModal').classList.add('show');
+    $('bsOverlay').classList.add('show');
+});
+
+// ── Zoom ──────────────────────────────────────────────────────────────────────
+async function zoomDesktop(s){desktopScale=Math.min(DESKTOP_MAX,Math.max(DESKTOP_MIN,s));updateZoomBadges();if(pdfDoc)await renderDesktopPage(currentPage);}
+$('zoomIn')&&$('zoomIn').addEventListener('click',()=>zoomDesktop(desktopScale+DESKTOP_STEP));
+$('zoomOut')&&$('zoomOut').addEventListener('click',()=>zoomDesktop(desktopScale-DESKTOP_STEP));
+$('zoomReset')&&$('zoomReset').addEventListener('click',()=>zoomDesktop(DESKTOP_BASE));
+$('pdfViewer')&&$('pdfViewer').addEventListener('wheel',e=>{if(e.ctrlKey){e.preventDefault();zoomDesktop(desktopScale+(e.deltaY<0?DESKTOP_STEP:-DESKTOP_STEP));}},{passive:false});
+
+async function zoomMobile(s){mobileUserScale=Math.min(MOBILE_MAX,Math.max(MOBILE_MIN,s));updateZoomBadges();if(pdfDoc)await renderBookPage(currentPage);}
+$('tbZoomIn')&&$('tbZoomIn').addEventListener('click',()=>zoomMobile(mobileUserScale+MOBILE_STEP));
+$('tbZoomOut')&&$('tbZoomOut').addEventListener('click',()=>zoomMobile(mobileUserScale-MOBILE_STEP));
+$('tbZoomReset')&&$('tbZoomReset').addEventListener('click',()=>zoomMobile(1.0));
+
+// ── Page Rendering (Mobile with horizontal scroll) ───────────────────────────
+async function renderBookPage(num){
+    if(!pdfDoc)return;
+    updateNavButtons();
+    const page=await pdfDoc.getPage(num);
+    const vp0=page.getViewport({scale:1});
+    const scale=(window.innerWidth/vp0.width)*mobileUserScale;
+    const vp=page.getViewport({scale});
+
+    const canvas=document.createElement('canvas');
+    canvas.width=vp.width;
+    canvas.height=vp.height;
+    canvas.style.width=vp.width+'px';
+    canvas.style.height=vp.height+'px';
+    canvas.style.display='block';
+    const ctx=canvas.getContext('2d');
+    await page.render({canvasContext:ctx,viewport:vp}).promise;
+
+    const textLayer=document.createElement('div');
+    textLayer.className='textLayer';
+    textLayer.style.width=vp.width+'px';
+    textLayer.style.height=vp.height+'px';
+    textLayer.style.fontSize='1px';
+
+    const tc=await page.getTextContent();
+    tc.items.forEach(item=>{
+        if(!item.str.trim())return;
+        const tx=pdfjsLib.Util.transform(vp.transform,item.transform);
+        const span=document.createElement('span');
+        span.textContent=item.str;
+        span.style.left=tx[4]+'px';
+        span.style.top=(tx[5]-Math.abs(tx[0]))+'px';
+        span.style.fontSize=Math.abs(tx[0])+'px';
+        span.style.lineHeight='1';
+        span.dataset.text=item.str;
+        attachTouchGestures(span);
+        textLayer.appendChild(span);
+    });
+
+    const pageWrap=document.createElement('div');
+    pageWrap.style.cssText='position:relative; width:fit-content;';
+    pageWrap.appendChild(canvas);
+    pageWrap.appendChild(textLayer);
+
+    const bp=$('bookPage');
+    bp.innerHTML='';
+    bp.appendChild(pageWrap);
+    $('readingProgress').style.width=((currentPage/totalPages)*100)+'%';
+}
+
+async function renderDesktopPage(num){
+    if(!pdfDoc)return;
+    const page=await pdfDoc.getPage(num);
+    const vp=page.getViewport({scale:desktopScale});
+    const pdfContainer=$('pdfContainer');pdfContainer.innerHTML='';
+
+    const wrapper=document.createElement('div');wrapper.className='page-wrapper';
+    wrapper.style.width=vp.width+'px';wrapper.style.height=vp.height+'px';
+    const canvas=document.createElement('canvas');
+    canvas.width=vp.width;canvas.height=vp.height;
+    await page.render({canvasContext:canvas.getContext('2d'),viewport:vp}).promise;
+
+    const textLayer=document.createElement('div');textLayer.className='textLayer';
+    wrapper.appendChild(canvas);wrapper.appendChild(textLayer);pdfContainer.appendChild(wrapper);
+
+    const tc=await page.getTextContent();
+    tc.items.forEach(item=>{
+        if(!item.str.trim())return;
+        const tx=pdfjsLib.Util.transform(vp.transform,item.transform);
+        const span=document.createElement('span');
+        span.textContent=item.str;
+        span.style.left=tx[4]+'px';
+        span.style.top=(tx[5]-Math.abs(tx[0]))+'px';
+        span.style.fontSize=Math.abs(tx[0])+'px';
+        span.style.lineHeight='1';
+        span.dataset.text=item.str;
+        attachClickGestures(span);
+        textLayer.appendChild(span);
+    });
+}
+
+function updateNavButtons(){
+    if($('prevPage'))$('prevPage').disabled=!pdfDoc||currentPage===1;
+    if($('nextPage'))$('nextPage').disabled=!pdfDoc||currentPage===totalPages;
+    if($('pageInfo'))$('pageInfo').textContent=pdfDoc?`${currentPage} / ${totalPages}`:'1 / 1';
+    if($('mobilePageInfo'))$('mobilePageInfo').textContent=pdfDoc?`${currentPage} / ${totalPages}`:'— / —';
+}
+
+$('tbPrev')&&$('tbPrev').addEventListener('click',()=>{if(pdfDoc&&currentPage>1){currentPage--;renderBookPage(currentPage);}});
+$('tbNext')&&$('tbNext').addEventListener('click',()=>{if(pdfDoc&&currentPage<totalPages){currentPage++;renderBookPage(currentPage);}});
+$('prevPage')&&$('prevPage').addEventListener('click',()=>{if(pdfDoc&&currentPage>1){currentPage--;renderDesktopPage(currentPage);}});
+$('nextPage')&&$('nextPage').addEventListener('click',()=>{if(pdfDoc&&currentPage<totalPages){currentPage++;renderDesktopPage(currentPage);}});
+
+// Keyboard navigation (desktop)
+document.addEventListener('keydown',e=>{
+    if(!pdfDoc||isMobile())return;
+    if(e.key==='ArrowRight'||e.key==='ArrowDown'){if(currentPage<totalPages){currentPage++;renderDesktopPage(currentPage);}}
+    if(e.key==='ArrowLeft'||e.key==='ArrowUp'){if(currentPage>1){currentPage--;renderDesktopPage(currentPage);}}
+});
+
+// ── Swipe Navigation (Mobile) ─────────────────────────────────────────────────
+let swipeStartX=null,swipeStartY=null,swipeStartTime=null;
+const bookReader=$('bookReader');
+bookReader.addEventListener('touchstart',e=>{
+    if(e.touches.length===1){
+        swipeStartX=e.touches[0].clientX;
+        swipeStartY=e.touches[0].clientY;
+        swipeStartTime=Date.now();
+    }
+},{passive:true});
+bookReader.addEventListener('touchend',e=>{
+    if(swipeStartX===null)return;
+    const dx=e.changedTouches[0].clientX-swipeStartX;
+    const dy=e.changedTouches[0].clientY-swipeStartY;
+    const dt=Date.now()-swipeStartTime;
+    if(Math.abs(dx)>Math.abs(dy)*1.5&&Math.abs(dx)>60&&dt<400){
+        if(dx<0&&pdfDoc&&currentPage<totalPages){currentPage++;renderBookPage(currentPage);}
+        else if(dx>0&&pdfDoc&&currentPage>1){currentPage--;renderBookPage(currentPage);}
+    }
+    swipeStartX=null;
+},{passive:true});
+
+// ── Pinch-to-Zoom (Mobile) ────────────────────────────────────────────────────
+let pinchStartDist=null,pinchStartScale=1.0;
+bookReader.addEventListener('touchstart',e=>{
+    if(e.touches.length===2){
+        pinchStartDist=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);
+        pinchStartScale=mobileUserScale;
+        swipeStartX=null;
+    }
+},{passive:true});
+bookReader.addEventListener('touchmove',e=>{
+    if(e.touches.length===2&&pinchStartDist){
+        const dist=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);
+        const newScale=pinchStartScale*(dist/pinchStartDist);
+        mobileUserScale=Math.min(MOBILE_MAX,Math.max(MOBILE_MIN,newScale));
+        updateZoomBadges();
+    }
+},{passive:true});
+bookReader.addEventListener('touchend',e=>{
+    if(pinchStartDist!==null&&e.touches.length<2){
+        pinchStartDist=null;
+        if(pdfDoc)renderBookPage(currentPage);
+    }
+},{passive:true});
+
+// ── Gestures ──────────────────────────────────────────────────────────────────
+function attachClickGestures(span){
+    let clicks=0,timer;
+    span.addEventListener('click',e=>{
+        e.preventDefault();clicks++;
+        if(clicks===1){
+            timer=setTimeout(()=>{
+                if(clicks===1){span.classList.add('tapped');setTimeout(()=>span.classList.remove('tapped'),700);onSpeak(span.dataset.text);}
+                clicks=0;
+            },280);
+        }else if(clicks>=2){clearTimeout(timer);clicks=0;span.classList.add('tapped');setTimeout(()=>span.classList.remove('tapped'),1000);onTranslate(span.dataset.text);}
+    });
+}
+
+function onTranslateAndSpeak(text){
+    addHistory(text,'translate');
+    bsCurrentWord=text;
+    if(isMobile()) openBottomSheet('translate');
+    translateText(text, currentLang, true);
+}
+
+function attachTouchGestures(span){
+    let lpTimer, didLP=false, touchStarted=false, tx0, ty0;
+    const LONG_PRESS_DELAY = 3000;
+
+    span.addEventListener('touchstart',e=>{
+        if(e.touches.length>1) return;
+        activate();
+        didLP=false; touchStarted=true;
+        const t=e.touches[0]; tx0=t.clientX; ty0=t.clientY;
+        $('lpRing').style.left=(tx0-28)+'px'; $('lpRing').style.top=(ty0-28)+'px';
+        $('lpArc').classList.remove('spinning'); void $('lpArc').offsetWidth;
+        $('lpArc').classList.add('spinning'); $('lpWrap').style.display='block';
+        span.classList.add('long-pressing');
+        lpTimer = setTimeout(()=>{
+            didLP=true; $('lpWrap').style.display='none';
+            span.classList.remove('long-pressing');
+            span.classList.add('tapped'); setTimeout(()=>span.classList.remove('tapped'),800);
+            if(navigator.vibrate) navigator.vibrate([40,20,40]);
+            onTranslateAndSpeak(span.dataset.text);
+        }, LONG_PRESS_DELAY);
+    }, {passive:true});
+
+    span.addEventListener('touchend',e=>{
+        if(!touchStarted) return;
+        touchStarted=false;
+        clearTimeout(lpTimer); $('lpWrap').style.display='none'; span.classList.remove('long-pressing');
+        if(e.touches.length>0) return;
+        const dx = Math.abs(e.changedTouches[0].clientX - tx0);
+        const dy = Math.abs(e.changedTouches[0].clientY - ty0);
+        if(!didLP && dx<15 && dy<15){
+            span.classList.add('tapped'); setTimeout(()=>span.classList.remove('tapped'),700);
+            onSpeak(span.dataset.text);
+        }
+    }, {passive:true});
+
+    span.addEventListener('touchmove',e=>{
+        const dx = Math.abs(e.touches[0].clientX - tx0);
+        const dy = Math.abs(e.touches[0].clientY - ty0);
+        if(dx>10 || dy>10){
+            clearTimeout(lpTimer);
+            $('lpWrap').style.display='none';
+            span.classList.remove('long-pressing');
+            touchStarted=false;
+        }
+    }, {passive:true});
+}
+
+// ── Speak & Translate ─────────────────────────────────────────────────────────
+function onSpeak(text){
+    bsCurrentWord=text; addHistory(text,'speak');
+    if($('pronuncBox')){$('pronuncBox').style.display='block'; $('pronuncWord').textContent=text; $('speakPlaceholder').style.display='none'; $('ttsSliders').style.display='block';}
+    speakText(text);
+}
+function speakText(text){
+    if(!text)return;
+    if(!selectedVoice){ showToast('⚠️ Select a voice first'); return; }
+    window.speechSynthesis.cancel();
+    const u=new SpeechSynthesisUtterance(text);
+    u.voice=selectedVoice; u.rate=ttsRate; u.pitch=ttsPitch; u.volume=1.0;
+    showToast('🔊 '+text,1800);
+    window.speechSynthesis.speak(u);
+}
+window.speakTranslation=function(text){
+    window.speechSynthesis.cancel();
+    const u=new SpeechSynthesisUtterance(text);
+    const enVoice=window.speechSynthesis.getVoices().find(v=>v.lang.startsWith('en'));
+    if(enVoice) u.voice=enVoice;
+    u.rate=1.0; window.speechSynthesis.speak(u);
+};
+
+function onTranslate(text){
+    addHistory(text,'translate'); bsCurrentWord=text;
+    if(isMobile()) openBottomSheet('translate');
+    translateText(text, currentLang, false);
+}
+
+async function translateText(text, srcLang, autoSpeak = false){
+    const placeholder='<span style="color:var(--muted);font-style:italic">⏳ Translating…</span>';
+    $('translationResult').innerHTML=placeholder;
+    if(isMobile() && bsActiveTab==='translate') renderBsTab('translate');
+    try{
+        const res=await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=${srcLang}|en`);
+        const data=await res.json();
+        if(data.responseStatus===200){
+            const tr=data.responseData.translatedText; bsCurrentTranslation=tr;
+            const safetr=escHtml(tr.replace(/'/g,"\\'"));
+            const html=`
+                <div style="margin-bottom:8px">
+                    <span style="font-size:.7rem;color:var(--muted);text-transform:uppercase;">Word</span><br>
+                    <span style="color:var(--accent);font-weight:bold;font-size:1rem;">${escHtml(text)}</span>
+                </div>
+                <div style="height:1px;background:rgba(255,255,255,.07);margin:8px 0;"></div>
+                <div>
+                    <span style="font-size:.7rem;color:var(--muted);text-transform:uppercase;">English Meaning</span><br>
+                    <div style="display:flex;align-items:center;gap:10px;margin-top:5px;flex-wrap:wrap;">
+                        <span style="color:var(--text);font-size:1.05rem;flex:1;">${escHtml(tr)}</span>
+                        <button onclick="window.speakTranslation('${safetr}')" class="btn btn-sm" style="padding:5px 12px;font-size:0.75rem;background:rgba(0,229,255,.15);border:1px solid var(--accent);color:var(--accent);border-radius:8px;min-height:auto;">🔊 Listen</button>
+                    </div>
+                </div>`;
+            $('translationResult').innerHTML=html;
+            if(autoSpeak) window.speakTranslation(tr);
+        } else {
+            $('translationResult').innerHTML='<span style="color:#ff6b6b">❌ Translation failed.</span>';
+        }
+        if(isMobile() && bsActiveTab==='translate') renderBsTab('translate');
+    }catch(err){
+        $('translationResult').innerHTML='<span style="color:#ff6b6b">❌ Network error.</span>';
+        if(isMobile() && bsActiveTab==='translate') renderBsTab('translate');
+    }
+}
+
+// ── Bottom Sheet ──────────────────────────────────────────────────────────────
+function openBottomSheet(tab){
+    bsActiveTab=tab;
+    $('bsOverlay').classList.add('show');
+    $('bottomSheet').classList.add('open');
+    setActiveTab(tab); renderBsTab(tab);
+}
+function closeBottomSheet(){
+    $('bottomSheet').classList.remove('open');
+    $('bsOverlay').classList.remove('show');
+    $('feedbackModal').classList.remove('show');
+}
+$('bsOverlay').addEventListener('click',closeBottomSheet);
+[$('bsTabSpeak'),$('bsTabTranslate'),$('bsTabHistory'),$('bsTabSettings')].forEach(tab=>{
+    tab&&tab.addEventListener('click',()=>{bsActiveTab=tab.dataset.tab;setActiveTab(bsActiveTab);renderBsTab(bsActiveTab);});
+});
+function setActiveTab(t){
+    [$('bsTabSpeak'),$('bsTabTranslate'),$('bsTabHistory'),$('bsTabSettings')].forEach(el=>el&&el.classList.remove('active'));
+    const map={speak:'bsTabSpeak',translate:'bsTabTranslate',history:'bsTabHistory',settings:'bsTabSettings'};
+    if($(map[t]))$(map[t]).classList.add('active');
+}
+
+function renderBsTab(t){
+    const content=$('bsContent');
+    if(t==='speak'){
+        content.innerHTML=`
+            <div style="margin-bottom:12px;">
+                <div style="font-size:.7rem;color:var(--muted);font-weight:700;text-transform:uppercase;margin-bottom:6px;">🔊 Last Word</div>
+                <div style="background:var(--card2);border-radius:10px;padding:10px 14px;font-size:1rem;font-weight:700;color:var(--accent);min-height:40px;">${escHtml(bsCurrentWord)||'<span style="color:var(--muted);font-style:italic;font-size:.85rem;">Tap a word in the PDF</span>'}</div>
+            </div>
+            <div style="display:flex;gap:10px;margin-bottom:16px;">
+                <button class="btn" style="flex:1" id="bsReplay">▶️ Speak Again</button>
+                <button class="btn" style="flex:1;background:linear-gradient(135deg,#c0392b,#922b21);" id="bsStop">⏹ Stop</button>
+            </div>
+            <div style="margin-bottom:12px;">
+                <label style="font-size:.7rem;color:var(--muted);display:flex;justify-content:space-between;margin-bottom:5px;">🎤 Voice <button class="btn-zoom" id="bsVoiceSample" style="padding:2px 8px; min-height:auto;">🔊 Sample</button></label>
+                <select id="bsVoiceSelect" style="width:100%;background:var(--card2);border:1px solid var(--border);border-radius:10px;color:var(--text);padding:10px;font-size:16px;outline:none;"></select>
+            </div>
+            <div style="margin-bottom:12px;">
+                <label style="font-size:.7rem;color:var(--muted);display:flex;justify-content:space-between;">Speed <span id="bsRateV">${ttsRate.toFixed(1)}×</span></label>
+                <input type="range" id="bsRate" min=".5" max="2" step=".1" value="${ttsRate}" style="width:100%;accent-color:var(--primary);margin-top:5px;height:6px;">
+            </div>
+            <div style="margin-bottom:12px;">
+                <label style="font-size:.7rem;color:var(--muted);display:flex;justify-content:space-between;">Pitch <span id="bsPitchV">${ttsPitch.toFixed(1)}</span></label>
+                <input type="range" id="bsPitch" min=".5" max="2" step=".1" value="${ttsPitch}" style="width:100%;accent-color:var(--primary);margin-top:5px;height:6px;">
+            </div>`;
+        const vs=$('bsVoiceSelect');
+        const filtered=allVoices.filter(v=>v.lang.startsWith(currentLang)||v.lang.startsWith(currentLang+'-'));
+        if(!filtered.length){const o=document.createElement('option');o.textContent='No voices available';vs.appendChild(o);}
+        else{filtered.forEach(v=>{const o=document.createElement('option');o.value=v.name;o.textContent=`${v.name} (${v.lang})`;vs.appendChild(o);});}
+        if(selectedVoice)vs.value=selectedVoice.name;
+        vs.addEventListener('change',e=>{
+            selectedVoice=allVoices.find(v=>v.name===e.target.value)||null;
+            if($('voiceSelectMobile'))$('voiceSelectMobile').value=e.target.value;
+        });
+        $('bsVoiceSample').addEventListener('click',()=>{
+            if(!selectedVoice){showToast('⚠️ Select a voice first');return;}
+            playVoiceSample(currentLang, selectedVoice);
+        });
+        $('bsRate').addEventListener('input',function(){ttsRate=parseFloat(this.value);$('bsRateV').textContent=ttsRate.toFixed(1)+'×';if($('startRateSlider')){$('startRateSlider').value=ttsRate;$('startRateVal').textContent=ttsRate.toFixed(1)+'×';}});
+        $('bsPitch').addEventListener('input',function(){ttsPitch=parseFloat(this.value);$('bsPitchV').textContent=ttsPitch.toFixed(1);});
+        $('bsReplay').addEventListener('click',()=>{if(bsCurrentWord)onSpeak(bsCurrentWord);else showToast('Tap a word first');});
+        $('bsStop').addEventListener('click',()=>{window.speechSynthesis.cancel();showToast('⏹ Stopped');});
+    }
+    else if(t==='translate'){
+        content.innerHTML=`
+            <div class="manual-translate" style="margin-bottom:12px;">
+                <input type="text" id="bsManualInput" placeholder="Type a word..." style="flex:1;background:var(--card2);border:1px solid var(--border);border-radius:8px;color:var(--text);padding:10px;font-size:16px;">
+                <button class="btn-zoom" id="bsManualBtn" style="padding:8px 14px;">🔍</button>
+            </div>
+            <div class="translation-box" style="min-height:80px;" id="bsTranslationResult">${$('translationResult') ? $('translationResult').innerHTML : '<span style="color:var(--muted);">Type a word above</span>'}</div>
+        `;
+        const input=$('bsManualInput');
+        const btn=$('bsManualBtn');
+        if(input && btn){
+            btn.addEventListener('click',()=>{
+                const word=input.value.trim();
+                if(word){
+                    bsCurrentWord=word;
+                    addHistory(word,'translate');
+                    translateText(word,currentLang, false);
+                } else showToast('Type a word');
+            });
+            input.addEventListener('keypress',e=>{if(e.key==='Enter') btn.click();});
+        }
+        const bsRes=$('bsTranslationResult');
+        if(bsRes && $('translationResult')) {
+            bsRes.innerHTML = $('translationResult').innerHTML;
+        }
+    }
+    else if(t==='history'){
+        if(!historyArr.length){content.innerHTML='<p class="history-empty">No activity yet…</p>';return;}
+        content.innerHTML='<ul class="history-list" id="bsHList" style="max-height:55dvh;"></ul>';
+        const ul=$('bsHList');
+        historyArr.forEach(({text,type})=>{
+            const li=document.createElement('li');li.className='history-item';
+            li.innerHTML=`<span class="h-type ${type}">${type==='speak'?'🔊':'📘'}</span><span class="h-text">${escHtml(text)}</span>`;
+            li.addEventListener('click',()=>{
+                bsCurrentWord=text;closeBottomSheet();
+                if(type==='speak')onSpeak(text);else onTranslate(text);
+            });
+            ul.appendChild(li);
+        });
+    }
+    else if(t==='settings'){
+        content.innerHTML=`
+            <div style="margin-bottom:16px;">
+                <label style="font-size:.75rem;color:var(--muted);font-weight:700;text-transform:uppercase;margin-bottom:8px;display:block;">🌐 Document Language</label>
+                <select id="bsLangSelect" style="width:100%;background:var(--card2);border:1px solid var(--border);border-radius:10px;color:var(--text);padding:10px;font-size:16px;outline:none;">
+                    <option value="hi">🇮🇳 Hindi</option><option value="bn">🇧🇩 Bengali</option>
+                    <option value="ta">🇮🇳 Tamil</option><option value="te">🇮🇳 Telugu</option>
+                    <option value="mr">🇮🇳 Marathi</option><option value="gu">🇮🇳 Gujarati</option>
+                    <option value="pa">🇮🇳 Punjabi</option><option value="ja">🇯🇵 Japanese</option>
+                    <option value="ru">🇷🇺 Russian</option><option value="en">🇺🇸 English</option>
+                    <option value="de">🇩🇪 German</option><option value="fr">🇫🇷 French</option>
+                    <option value="es">🇪🇸 Spanish</option><option value="zh">🇨🇳 Chinese</option>
+                    <option value="ar">🇸🇦 Arabic</option><option value="ko">🇰🇷 Korean</option>
+                    <option value="pt">🇧🇷 Portuguese</option><option value="it">🇮🇹 Italian</option>
+                </select>
+            </div>
+            <div style="background:var(--card2);border-radius:12px;padding:14px;font-size:.82rem;color:var(--muted);line-height:1.8;">
+                <div style="font-weight:700;color:var(--text);margin-bottom:8px;">📖 How to Use</div>
+                <div>👆 <strong style="color:var(--text);">Tap</strong> a word → Speak it aloud</div>
+                <div>⏱️ <strong style="color:var(--text);">Hold 3s</strong> on a word → Translate & speak English meaning</div>
+                <div>⬅ ➡ <strong style="color:var(--text);">Swipe</strong> left/right → Change page</div>
+                <div>🤏 <strong style="color:var(--text);">Pinch</strong> → Zoom in/out</div>
+                <div>📂 <strong style="color:var(--text);">PDF</strong> button → Load new PDF</div>
+                <div>📝 <strong style="color:var(--text);">Type</strong> a word in Meaning tab → Translate any word</div>
+            </div>`;
+        $('bsLangSelect').value=currentLang;
+        $('bsLangSelect').addEventListener('change',e=>{onLangChange(e.target.value);showToast('🌐 Language changed');});
+    }
+}
+
+// ── History ───────────────────────────────────────────────────────────────────
+function addHistory(text,type){
+    historyArr.unshift({text,type});if(historyArr.length>30)historyArr.pop();
+    const hl=$('historyList');if(!hl)return;hl.innerHTML='';
+    historyArr.forEach(({text,type})=>{
+        const li=document.createElement('li');li.className='history-item';
+        li.innerHTML=`<span class="h-type ${type}">${type==='speak'?'🔊':'📘'}</span><span class="h-text" title="${escHtml(text)}">${escHtml(text)}</span>`;
+        li.addEventListener('click',()=>{if(type==='speak')onSpeak(text);else onTranslate(text);});
+        hl.appendChild(li);
+    });
+}
+
+})();
+</script>
+</body>
+</html>
