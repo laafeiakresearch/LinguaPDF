@@ -406,13 +406,40 @@ const samplePhrases = {
   'pt': 'Olá, isto é uma amostra.',
   'it': 'Ciao, questo è un esempio.'
 };
+
+// ── Helper to identify Google voices ───────────────────────────────────────
+function isGoogleVoice(voice) {
+    return voice.name.toLowerCase().includes('google');
+}
+
+// ── Voice fallback helper (prioritizes Google) ─────────────────────────────
+function getBestVoiceForLang(lang) {
+    if (!allVoices.length) return null;
+    
+    // First, try to find a Google voice for the exact language
+    let voice = allVoices.find(v => isGoogleVoice(v) && (v.lang.startsWith(lang) || v.lang.startsWith(lang+'-')));
+    if (voice) return voice;
+    
+    // Then any voice for that language
+    voice = allVoices.find(v => v.lang.startsWith(lang) || v.lang.startsWith(lang+'-'));
+    if (voice) return voice;
+    
+    // Then any Google voice
+    voice = allVoices.find(v => isGoogleVoice(v));
+    if (voice) return voice;
+    
+    // Finally any voice
+    return allVoices[0];
+}
+
 function playVoiceSample(lang, voiceObj) {
     const phrase = samplePhrases[lang] || samplePhrases['en'];
-    if (!voiceObj && selectedVoice) voiceObj = selectedVoice;
-    if (!voiceObj) { showToast('⚠️ No voice selected'); return; }
+    let voice = voiceObj || selectedVoice;
+    if (!voice) voice = getBestVoiceForLang(lang);
+    if (!voice) { showToast('⚠️ No voice available'); return; }
     window.speechSynthesis.cancel();
     const utter = new SpeechSynthesisUtterance(phrase);
-    utter.voice = voiceObj;
+    utter.voice = voice;
     utter.rate = 1.0;
     utter.pitch = 1.0;
     window.speechSynthesis.speak(utter);
@@ -429,40 +456,40 @@ function updateZoomBadges(){
 
 // ── Restart / Go Home ────────────────────────────────────────────────────────
 function restartApp(){
-    // Close PDF
     if(pdfDoc){
         try{ pdfDoc.destroy(); }catch(e){}
         pdfDoc=null;
     }
     currentPage=1; totalPages=0;
-    // Reset UI
     if(isMobile()){
         $('bookReader').classList.remove('active');
         $('mobileStartScreen').classList.add('active');
     } else {
-        // Desktop: clear PDF view
         $('pdfContainer').innerHTML = '<div class="pdf-placeholder"><span style="font-size:3rem;opacity:0.5">📂</span><p>Upload a PDF to start reading</p></div>';
         $('prevPage').disabled=true; $('nextPage').disabled=true; $('pageInfo').textContent='1 / 1';
         $('zoomBadge').textContent='100%';
     }
-    // Reset file inputs (optional)
     if($('fileInput')) $('fileInput').value='';
     if($('fileInputMobile')) $('fileInputMobile').value='';
     showToast('🏠 Back to start');
 }
 
-// Add click handlers to titles
 $('mobileTitle')?.addEventListener('click', restartApp);
 $('startTitle')?.addEventListener('click', restartApp);
 $('desktopTitle')?.addEventListener('click', restartApp);
 
-// ── Activate Voice ────────────────────────────────────────────────────────────
+// ── Activate Voice (Chrome/Brave fix) ────────────────────────────────────────
 function activate(){
     if(!isActivated){
         const u=new SpeechSynthesisUtterance(' ');u.volume=0;
-        window.speechSynthesis.speak(u);isActivated=true;
+        window.speechSynthesis.speak(u);
+        isActivated=true;
         showToast('✅ Voice Activated!');
         if($('tbActivateBtn'))$('tbActivateBtn').textContent='✅ Active';
+        setTimeout(() => {
+            allVoices = window.speechSynthesis.getVoices();
+            updateVoiceDropdowns();
+        }, 200);
     }
 }
 $('activateBtn')&&$('activateBtn').addEventListener('click',activate);
@@ -475,22 +502,47 @@ function loadVoices(){
     updateVoiceDropdowns();
 }
 function updateVoiceDropdowns(){
-    const filtered=allVoices.filter(v=>v.lang.startsWith(currentLang)||v.lang.startsWith(currentLang+'-'));
+    // Filter voices by current language
+    let filtered = allVoices.filter(v=>v.lang.startsWith(currentLang)||v.lang.startsWith(currentLang+'-'));
+    // Sort: Google voices first, then others
+    filtered.sort((a,b) => {
+        const aGoogle = isGoogleVoice(a) ? 0 : 1;
+        const bGoogle = isGoogleVoice(b) ? 0 : 1;
+        if (aGoogle !== bGoogle) return aGoogle - bGoogle;
+        // If both same type, sort by name
+        return a.name.localeCompare(b.name);
+    });
+    
     const langNames={'hi':'HI','bn':'BN','ta':'TA','te':'TE','mr':'MR','gu':'GU','pa':'PA','ja':'JA',
         'ru':'RU','en':'EN','de':'DE','fr':'FR','es':'ES','zh':'ZH','ar':'AR','ko':'KO','pt':'PT','it':'IT'};
     if($('tbLangBtn'))$('tbLangBtn').textContent='🌐 '+(langNames[currentLang]||currentLang.toUpperCase());
+    
     ['voiceSelect','voiceSelectMobile'].forEach(id=>{
         const el=$(id);if(!el)return;
         el.innerHTML='<option value="">-- Select voice --</option>';
-        if(!filtered.length){el.disabled=true;if(id==='voiceSelectMobile')$('voiceWarnMobile').textContent='⚠ No voices for this language';}
-        else{
+        if(!filtered.length){
+            el.disabled=true;
+            if(id==='voiceSelectMobile')$('voiceWarnMobile').textContent='⚠ No voices for this language';
+        } else {
             el.disabled=false;
             if(id==='voiceSelectMobile')$('voiceWarnMobile').textContent='';
-            filtered.forEach(v=>{const o=document.createElement('option');o.value=v.name;o.textContent=`${v.name} (${v.lang})`;el.appendChild(o);});
-            el.value=filtered[0].name;
+            filtered.forEach(v=>{
+                const o=document.createElement('option');
+                o.value=v.name;
+                o.textContent=`${v.name} (${v.lang})${isGoogleVoice(v) ? ' ★' : ''}`;
+                el.appendChild(o);
+            });
+            // Select first Google voice if available, else first
+            const googleFirst = filtered.find(v => isGoogleVoice(v));
+            if (googleFirst) {
+                el.value = googleFirst.name;
+                selectedVoice = googleFirst;
+            } else {
+                el.value = filtered[0].name;
+                selectedVoice = filtered[0];
+            }
         }
     });
-    selectedVoice=filtered.length?filtered[0]:null;
 }
 window.speechSynthesis.onvoiceschanged=loadVoices;loadVoices();
 
@@ -800,7 +852,7 @@ function attachTouchGestures(span){
     }, {passive:true});
 }
 
-// ── Speak & Translate ─────────────────────────────────────────────────────────
+// ── Speak & Translate (with Google voice preference) ─────────────────────────
 function onSpeak(text){
     bsCurrentWord=text; addHistory(text,'speak');
     if($('pronuncBox')){$('pronuncBox').style.display='block'; $('pronuncWord').textContent=text; $('speakPlaceholder').style.display='none'; $('ttsSliders').style.display='block';}
@@ -808,17 +860,22 @@ function onSpeak(text){
 }
 function speakText(text){
     if(!text)return;
-    if(!selectedVoice){ showToast('⚠️ Select a voice first'); return; }
+    let voice = selectedVoice;
+    if (!voice) {
+        voice = getBestVoiceForLang(currentLang);
+        if (!voice) { showToast('⚠️ No voice available'); return; }
+        selectedVoice = voice;
+    }
     window.speechSynthesis.cancel();
     const u=new SpeechSynthesisUtterance(text);
-    u.voice=selectedVoice; u.rate=ttsRate; u.pitch=ttsPitch; u.volume=1.0;
+    u.voice=voice; u.rate=ttsRate; u.pitch=ttsPitch; u.volume=1.0;
     showToast('🔊 '+text,1800);
     window.speechSynthesis.speak(u);
 }
 window.speakTranslation=function(text){
     window.speechSynthesis.cancel();
     const u=new SpeechSynthesisUtterance(text);
-    const enVoice=window.speechSynthesis.getVoices().find(v=>v.lang.startsWith('en'));
+    const enVoice = getBestVoiceForLang('en');
     if(enVoice) u.voice=enVoice;
     u.rate=1.0; window.speechSynthesis.speak(u);
 };
@@ -911,10 +968,24 @@ function renderBsTab(t){
                 <input type="range" id="bsPitch" min=".5" max="2" step=".1" value="${ttsPitch}" style="width:100%;accent-color:var(--primary);margin-top:5px;height:6px;">
             </div>`;
         const vs=$('bsVoiceSelect');
-        const filtered=allVoices.filter(v=>v.lang.startsWith(currentLang)||v.lang.startsWith(currentLang+'-'));
+        // For bottom sheet, we need to rebuild the voice list sorted
+        let filtered = allVoices.filter(v=>v.lang.startsWith(currentLang)||v.lang.startsWith(currentLang+'-'));
+        filtered.sort((a,b) => {
+            const aGoogle = isGoogleVoice(a) ? 0 : 1;
+            const bGoogle = isGoogleVoice(b) ? 0 : 1;
+            if (aGoogle !== bGoogle) return aGoogle - bGoogle;
+            return a.name.localeCompare(b.name);
+        });
         if(!filtered.length){const o=document.createElement('option');o.textContent='No voices available';vs.appendChild(o);}
-        else{filtered.forEach(v=>{const o=document.createElement('option');o.value=v.name;o.textContent=`${v.name} (${v.lang})`;vs.appendChild(o);});}
-        if(selectedVoice)vs.value=selectedVoice.name;
+        else{filtered.forEach(v=>{const o=document.createElement('option');o.value=v.name;o.textContent=`${v.name} (${v.lang})${isGoogleVoice(v) ? ' ★' : ''}`;vs.appendChild(o);});}
+        if(selectedVoice) {
+            if (filtered.find(v => v.name === selectedVoice.name)) vs.value = selectedVoice.name;
+            else {
+                const googleFirst = filtered.find(v => isGoogleVoice(v));
+                if (googleFirst) vs.value = googleFirst.name;
+                else vs.value = filtered[0].name;
+            }
+        }
         vs.addEventListener('change',e=>{
             selectedVoice=allVoices.find(v=>v.name===e.target.value)||null;
             if($('voiceSelectMobile'))$('voiceSelectMobile').value=e.target.value;
@@ -986,7 +1057,7 @@ function renderBsTab(t){
             </div>
             <div style="background:var(--card2);border-radius:12px;padding:14px;font-size:.82rem;color:var(--muted);line-height:1.8;">
                 <div style="font-weight:700;color:var(--text);margin-bottom:8px;">📖 How to Use</div>
-                <div>👆 <strong style="color:var(--text);">Tap</strong> a word → Speak it aloud</div>
+                <div>👆 <strong style="color:var(--text);">Tap</strong> a word → Speak it aloud (Google voice preferred)</div>
                 <div>⏱️ <strong style="color:var(--text);">Hold 3s</strong> on a word → Translate & speak English meaning</div>
                 <div>⬅ ➡ <strong style="color:var(--text);">Swipe</strong> left/right → Change page</div>
                 <div>🤏 <strong style="color:var(--text);">Pinch</strong> → Zoom in/out</div>
