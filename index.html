@@ -41,8 +41,8 @@
         .header{display:flex;flex-wrap:wrap;gap:12px;background:var(--card);backdrop-filter:blur(20px);border:1px solid var(--border);border-radius:var(--radius);padding:16px;align-items:flex-end;box-shadow:0 8px 40px rgba(0,0,0,.45)}
         .control-group{flex:1 1 160px;display:flex;flex-direction:column;gap:5px}
         .control-group label{font-size:.68rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:1px}
-        select,input[type="file"]{width:100%;background:var(--card2);border:1px solid var(--border);border-radius:10px;color:var(--text);padding:10px 12px;font-size:max(16px,.85rem);font-family:'Inter',sans-serif;cursor:pointer;outline:none;transition:border-color .2s}
-        select:focus,input[type="file"]:focus{border-color:var(--primary)}
+        select,input[type="file"],textarea{width:100%;background:var(--card2);border:1px solid var(--border);border-radius:10px;color:var(--text);padding:10px 12px;font-size:max(16px,.85rem);font-family:'Inter',sans-serif;cursor:pointer;outline:none;transition:border-color .2s}
+        select:focus,input[type="file"]:focus,textarea:focus{border-color:var(--primary)}
         .main{display:flex;gap:18px;flex-wrap:wrap;align-items:flex-start}
         .pdf-panel{flex:2 1 560px;background:var(--card);backdrop-filter:blur(18px);border:1px solid var(--border);border-radius:var(--radius);padding:14px;display:flex;flex-direction:column;gap:12px;box-shadow:0 8px 40px rgba(0,0,0,.4)}
         .pdf-toolbar{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
@@ -60,10 +60,10 @@
         .panel-title .dot{width:8px;height:8px;border-radius:50%;background:var(--primary);box-shadow:0 0 6px var(--primary)}
         .translation-box{background:var(--card2);border-radius:10px;padding:14px;min-height:100px;line-height:1.7;font-size:.89rem;word-break:break-word;border:1px solid rgba(255,255,255,.04)}
         .manual-pronounce{display:flex;gap:6px;margin-bottom:12px; margin-top:5px;}
-        .manual-pronounce input{flex:1;background:var(--card2);border:1px solid var(--border);border-radius:8px;color:var(--text);padding:8px 12px;font-size:.85rem;outline:none;}
+        .manual-pronounce input{flex:1;background:var(--card2);border:1px solid var(--border);border-radius:8px;color:var(--text);padding:8px 12px;font-size:.85rem;outline:none; max-height:80px; overflow-y:auto; resize:vertical;}
         .manual-pronounce input:focus{border-color:var(--accent);}
         .manual-translate{display:flex;gap:6px;margin-bottom:10px;}
-        .manual-translate input{flex:1;background:var(--card2);border:1px solid var(--border);border-radius:8px;color:var(--text);padding:8px 12px;font-size:.85rem;outline:none;}
+        .manual-translate input{flex:1;background:var(--card2);border:1px solid var(--border);border-radius:8px;color:var(--text);padding:8px 12px;font-size:.85rem;outline:none; max-height:80px; overflow-y:auto; resize:vertical;}
         .manual-translate input:focus{border-color:var(--accent);}
         .pronunc-box{background:rgba(124,111,255,.08);border:1px solid rgba(124,111,255,.2);border-radius:10px;padding:10px 14px;font-size:.86rem;color:var(--primary);margin-bottom:8px;display:none}
         .pronunc-box .word{font-size:1.05rem;font-weight:600}
@@ -78,6 +78,13 @@
         .h-type.translate{background:rgba(0,229,255,.15);color:var(--accent)}
         .h-text{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;color:var(--muted)}
         .history-empty{color:var(--muted);font-style:italic;font-size:.82rem;text-align:center;padding:10px}
+
+        /* Document reader player */
+        .doc-reader{background:var(--card2);border-radius:10px;padding:12px;margin-bottom:12px; border:1px solid rgba(255,255,255,.04);}
+        .doc-reader .row{display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap;}
+        .doc-reader .progress-bar{height:4px;background:var(--border);border-radius:2px;flex:1;}
+        .doc-reader .progress-fill{height:100%;width:0%;background:var(--accent);border-radius:2px;transition:width 0.2s;}
+        .doc-reader .status{font-size:.7rem;color:var(--muted);}
 
         /* ═══ TEXT LAYER - SHARED ═══ */
         .textLayer{position:absolute;top:0;left:0;width:100%;height:100%;z-index:5;
@@ -101,12 +108,11 @@
         .mobile-start-screen h2{font-size:1.4rem;text-align:center;margin-bottom:2px;background:linear-gradient(135deg,var(--primary),var(--accent));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text; cursor:pointer;}
         .mobile-start-screen .hint-row{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin-bottom:4px;}
         .mobile-start-screen .hint-chip{background:rgba(124,111,255,.1);border:1px solid rgba(124,111,255,.25);border-radius:20px;padding:3px 10px;font-size:.7rem;color:var(--muted);}
-        /* 🔽 EXTRA TIGHT SPACING INSIDE CARD 🔽 */
-        .mobile-start-screen .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:8px;display:flex;flex-direction:column;gap:2px;} /* reduced to 2px */
+        .mobile-start-screen .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:8px;display:flex;flex-direction:column;gap:2px;}
         .mobile-start-screen .card .control-group { gap: 1px; } 
         .mobile-start-screen .card .control-group label { font-size:0.7rem; margin-bottom:0 !important; } 
         .mobile-start-screen .card .control-group select,
-        .mobile-start-screen .card .control-group input[type="range"] { margin-top: 0; padding: 6px 8px; font-size:14px; } /* smaller select */
+        .mobile-start-screen .card .control-group input[type="range"] { margin-top: 0; padding: 6px 8px; font-size:14px; }
         .mobile-start-screen .card > div:last-child { margin-bottom: 0; } 
         .mobile-start-screen .card input[type="file"] { margin-top: 0; padding: 6px 8px; font-size:14px; }
 
@@ -204,7 +210,8 @@
     <div class="hint-row">
         <span class="hint-chip">👆 Tap = Speak</span>
         <span class="hint-chip">👆 Hold 3s = Translate & Speak</span>
-        <span class="hint-chip">⬅➡ Swipe = Page</span>
+        <span class="hint-chip">⬅➡ Swipe = Page (PDF)</span>
+        <span class="hint-chip">🔹 Select text → click "Speak" to read selection</span>
     </div>
     <div class="card">
         <div class="control-group">
@@ -228,7 +235,6 @@
                 <option value="ko">🇰🇷 Korean</option>
                 <option value="pt">🇧🇷 Portuguese</option>
                 <option value="it">🇮🇹 Italian</option>
-                <!-- many more added from the robust code -->
                 <option value="af">🇿🇦 Afrikaans</option><option value="bg">🇧🇬 Bulgarian</option>
                 <option value="ca">🇪🇸 Catalan</option><option value="cs">🇨🇿 Czech</option>
                 <option value="da">🇩🇰 Danish</option><option value="el">🇬🇷 Greek</option>
@@ -258,9 +264,14 @@
             <input type="range" id="startRateSlider" min=".5" max="2" step=".1" value="1.0" style="width:100%;accent-color:var(--primary);">
         </div>
         <div>
-            <label style="font-size:0.7rem;color:var(--primary);font-weight:bold;">📄 Upload PDF to Start</label>
+            <label style="font-size:0.7rem;color:var(--primary);font-weight:bold;">📄 Upload PDF</label>
             <input type="file" id="fileInputMobile" accept=".pdf" style="border-color:var(--primary);background:rgba(124,111,255,0.05);">
         </div>
+        <div>
+            <label style="font-size:0.7rem;color:var(--primary);font-weight:bold;">📄 Upload Text/Word</label>
+            <input type="file" id="textFileInputMobile" accept=".txt,.docx,.doc" style="border-color:var(--primary);background:rgba(124,111,255,0.05);">
+        </div>
+        <!-- Removed separate paste text area; now use pronunciation input -->
     </div>
 </div>
 
@@ -271,7 +282,7 @@
     </div>
     <div class="mobile-nav-controls">
         <button class="tb-icon-btn" id="tbPrev">⬅</button>
-        <span class="mobile-page-info" id="mobilePageInfo">1 / 1</span>
+        <span class="mobile-page-info" id="mobilePageInfo">— / —</span>
         <button class="tb-icon-btn" id="tbNext">➡</button>
         <div class="divider-v"></div>
         <button class="tb-icon-btn" id="tbZoomOut">−</button>
@@ -333,7 +344,6 @@
                 <option value="ko">🇰🇷 Korean</option>
                 <option value="pt">🇧🇷 Portuguese</option>
                 <option value="it">🇮🇹 Italian</option>
-                <!-- same extended list as mobile -->
                 <option value="af">🇿🇦 Afrikaans</option><option value="bg">🇧🇬 Bulgarian</option>
                 <option value="ca">🇪🇸 Catalan</option><option value="cs">🇨🇿 Czech</option>
                 <option value="da">🇩🇰 Danish</option><option value="el">🇬🇷 Greek</option>
@@ -364,6 +374,11 @@
             <label>📄 Upload PDF</label>
             <input type="file" id="fileInput" accept=".pdf">
         </div>
+        <div class="control-group">
+            <label>📄 Upload Text/Word</label>
+            <input type="file" id="textFileInput" accept=".txt,.docx,.doc">
+        </div>
+        <!-- Removed separate paste text area -->
         <button class="btn" id="activateBtn">🔊 Activate Voice</button>
         <button class="btn btn-sm" id="desktopFeedbackBtn">💬 Feedback</button>
     </div>
@@ -386,7 +401,7 @@
                 <div class="pdf-container" id="pdfContainer">
                     <div class="pdf-placeholder">
                         <span style="font-size:3rem;opacity:0.5">📂</span>
-                        <p>Upload a PDF to start reading</p>
+                        <p>Upload a PDF or text/Word document to start reading</p>
                     </div>
                 </div>
             </div>
@@ -394,13 +409,23 @@
         <div class="sidebar">
             <div class="panel">
                 <div class="panel-title"><span class="dot"></span> Pronunciation</div>
-                <!-- Manual pronunciation input (write text and get pronunciation) -->
+                <!-- Document reader player (visible only for text) -->
+                <div class="doc-reader" id="docReaderControls" style="display:none;">
+                    <div class="row">
+                        <button class="btn-zoom" id="playPauseBtn">▶️ Play</button>
+                        <button class="btn-zoom" id="stopBtn">⏹️ Stop</button>
+                        <span class="status" id="readingStatus">Not playing</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="readingProgressFill"></div>
+                    </div>
+                </div>
                 <div class="manual-pronounce">
-                    <input type="text" id="manualPronounceInput" placeholder="Type a word...">
-                    <button class="btn-zoom" id="manualPronounceBtn" style="padding:6px 12px;">🔊 Speak</button>
+                    <input type="text" id="manualPronounceInput" placeholder="Type or paste a word / text... (select text in viewer to speak selection)" style="max-height:80px; overflow-y:auto; resize:vertical;">
+                    <button class="btn-zoom" id="manualPronounceBtn" style="padding:6px 12px;">🔊 Speak / Load</button>
                 </div>
                 <div class="pronunc-box" id="pronuncBox"><div class="word" id="pronuncWord"></div></div>
-                <div style="color:var(--muted);font-style:italic;font-size:.83rem" id="speakPlaceholder">Or click a word in the PDF…</div>
+                <div style="color:var(--muted);font-style:italic;font-size:.83rem" id="speakPlaceholder">Or click a word in the document…</div>
                 <div class="slider-group" id="ttsSliders" style="display:none">
                     <label>Speed <span id="rateVal">1.0×</span></label>
                     <input type="range" id="rateSlider" min=".5" max="2" step=".1" value="1.0">
@@ -411,10 +436,10 @@
             <div class="panel">
                 <div class="panel-title"><span class="dot" style="background:var(--accent)"></span> English Meaning</div>
                 <div class="manual-translate">
-                    <input type="text" id="manualTranslateInput" placeholder="Type a word...">
+                    <input type="text" id="manualTranslateInput" placeholder="Type a word..." style="max-height:80px; overflow-y:auto; resize:vertical;">
                     <button class="btn-zoom" id="manualTranslateBtn" style="padding:6px 12px;">🔍</button>
                 </div>
-                <div class="translation-box" id="translationResult"><span style="color:var(--muted);font-style:italic;font-size:.84rem">Double-click a word or type above to translate…</span></div>
+                <div class="translation-box" id="translationResult"><span style="color:var(--muted);font-style:italic;font-size:.84rem">Double‑click a word or type above to translate…</span></div>
             </div>
             <div class="panel">
                 <div class="panel-title"><span class="dot" style="background:var(--accent2)"></span> History</div>
@@ -425,6 +450,7 @@
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.4.2/mammoth.browser.min.js"></script>
 <script>
 (function(){
 'use strict';
@@ -447,7 +473,16 @@ const DESKTOP_BASE=1.5,DESKTOP_MIN=0.5,DESKTOP_MAX=4.0,DESKTOP_STEP=0.25;
 let mobileUserScale=1.0;
 const MOBILE_MIN=0.5,MOBILE_MAX=4.0,MOBILE_STEP=0.25;
 
-// ── Language to BCP-47 mapping (from robust code) ───────────────────────────
+let currentDocType = 'pdf'; // 'pdf', 'text', 'word'
+let textContent = '';
+
+// Document reader variables
+let wordsList = [];          // array of {word: string}
+let currentWordIndex = 0;
+let isPlaying = false;
+let currentUtterance = null;
+
+// ── Language to BCP-47 mapping ───────────────────────────────────────────────
 const LANG_BCP = {
     en:'en-US', de:'de-DE', ja:'ja-JP', fr:'fr-FR', zh:'zh-CN', hi:'hi-IN',
     af:'af', ar:'ar', bg:'bg', bn:'bn', ca:'ca', cs:'cs', da:'da', el:'el',
@@ -458,34 +493,27 @@ const LANG_BCP = {
     tr:'tr', uk:'uk', ur:'ur', vi:'vi', zu:'zu'
 };
 
-// ── Helper to identify Google voices (from robust code) ─────────────────────
 function isGoogleVoice(voice) {
     return voice.name.toLowerCase().includes('google');
 }
 
-// ── Voice fallback helper (prioritizes Google, then exact language, then any) ──
 function getBestVoiceForLang(lang) {
     if (!allVoices.length) return null;
     const bcp = LANG_BCP[lang] || lang;
     const langLower = lang.toLowerCase();
     
-    // 1. Google voice with exact BCP match
     let voice = allVoices.find(v => isGoogleVoice(v) && (v.lang.toLowerCase() === bcp.toLowerCase() || v.lang.toLowerCase().startsWith(langLower)));
     if (voice) return voice;
     
-    // 2. Any voice with exact BCP match
     voice = allVoices.find(v => v.lang.toLowerCase() === bcp.toLowerCase() || v.lang.toLowerCase().startsWith(langLower));
     if (voice) return voice;
     
-    // 3. Any Google voice
     voice = allVoices.find(v => isGoogleVoice(v));
     if (voice) return voice;
     
-    // 4. Any voice at all
     return allVoices[0];
 }
 
-// ── Sample phrases for voice preview (from robust code) ─────────────────────
 const samplePhrases = {
     en:"Hello! How are you today?", de:"Hallo! Wie geht es dir heute?",
     ja:"こんにちは！今日はお元気ですか？", fr:"Bonjour! Comment allez-vous aujourd'hui?",
@@ -524,14 +552,13 @@ function playVoiceSample(lang, voiceObj) {
     window.speechSynthesis.cancel();
     const utter = new SpeechSynthesisUtterance(phrase);
     utter.voice = voice;
-    utter.lang = voice.lang; // critical for correct pronunciation
+    utter.lang = voice.lang;
     utter.rate = 1.0;
     utter.pitch = 1.0;
     window.speechSynthesis.speak(utter);
     showToast('🔊 Voice sample');
 }
 
-// ── Helpers ──────────────────────────────────────────────────────────────────
 function escHtml(s){return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
 function showToast(msg,dur=2200){const t=$('toast');clearTimeout(t._t);t.textContent=msg;t.classList.add('show');t._t=setTimeout(()=>t.classList.remove('show'),dur);}
 function updateZoomBadges(){
@@ -539,23 +566,30 @@ function updateZoomBadges(){
     if($('tbZoomBadge'))$('tbZoomBadge').textContent=Math.round(mobileUserScale*100)+'%';
 }
 
-// ── Restart / Go Home ────────────────────────────────────────────────────────
 function restartApp(){
+    stopReading();
     if(pdfDoc){
         try{ pdfDoc.destroy(); }catch(e){}
         pdfDoc=null;
     }
     currentPage=1; totalPages=0;
+    currentDocType = 'pdf';
+    textContent = '';
+    wordsList = [];
+    currentWordIndex = 0;
+    hideDocReader();
     if(isMobile()){
         $('bookReader').classList.remove('active');
         $('mobileStartScreen').classList.add('active');
     } else {
-        $('pdfContainer').innerHTML = '<div class="pdf-placeholder"><span style="font-size:3rem;opacity:0.5">📂</span><p>Upload a PDF to start reading</p></div>';
+        $('pdfContainer').innerHTML = '<div class="pdf-placeholder"><span style="font-size:3rem;opacity:0.5">📂</span><p>Upload a PDF or text/Word document to start reading</p></div>';
         $('prevPage').disabled=true; $('nextPage').disabled=true; $('pageInfo').textContent='1 / 1';
         $('zoomBadge').textContent='100%';
     }
     if($('fileInput')) $('fileInput').value='';
     if($('fileInputMobile')) $('fileInputMobile').value='';
+    if($('textFileInput')) $('textFileInput').value='';
+    if($('textFileInputMobile')) $('textFileInputMobile').value='';
     showToast('🏠 Back to start');
 }
 
@@ -563,7 +597,6 @@ $('mobileTitle')?.addEventListener('click', restartApp);
 $('startTitle')?.addEventListener('click', restartApp);
 $('desktopTitle')?.addEventListener('click', restartApp);
 
-// ── Activate Voice (Chrome/Brave fix) ────────────────────────────────────────
 function activate(){
     if(!isActivated){
         const u=new SpeechSynthesisUtterance(' ');u.volume=0;
@@ -580,20 +613,17 @@ function activate(){
 $('activateBtn')&&$('activateBtn').addEventListener('click',activate);
 $('tbActivateBtn')&&$('tbActivateBtn').addEventListener('click',activate);
 
-// ── Voices ────────────────────────────────────────────────────────────────────
 function loadVoices(){
     allVoices=window.speechSynthesis.getVoices();
     if(!allVoices.length){setTimeout(loadVoices,300);return;}
     updateVoiceDropdowns();
 }
 function updateVoiceDropdowns(){
-    // Filter voices by current language (using BCP mapping)
     const bcpTarget = LANG_BCP[currentLang] || currentLang;
     let filtered = allVoices.filter(v => {
         const vLang = v.lang.toLowerCase();
         return vLang === bcpTarget.toLowerCase() || vLang.startsWith(currentLang.toLowerCase());
     });
-    // Sort: Google voices first, then others
     filtered.sort((a,b) => {
         const aGoogle = isGoogleVoice(a) ? 0 : 1;
         const bGoogle = isGoogleVoice(b) ? 0 : 1;
@@ -620,7 +650,6 @@ function updateVoiceDropdowns(){
                 o.textContent=`${v.name} (${v.lang})${isGoogleVoice(v) ? ' ★' : ''}`;
                 el.appendChild(o);
             });
-            // Select first Google voice if available, else first
             const googleFirst = filtered.find(v => isGoogleVoice(v));
             if (googleFirst) {
                 el.value = googleFirst.name;
@@ -646,39 +675,153 @@ $('langSelectMobile')&&$('langSelectMobile').addEventListener('change',e=>onLang
     $(id)&&$(id).addEventListener('change',e=>{selectedVoice=allVoices.find(v=>v.name===e.target.value)||null;});
 });
 
-// Voice sample buttons
 $('voiceSampleDesktop')&&$('voiceSampleDesktop').addEventListener('click',()=>{
     if(!selectedVoice){showToast('⚠️ Select a voice first');return;}
     playVoiceSample(currentLang, selectedVoice);
 });
 
-// ── Manual Pronunciation (Desktop) ─────────────────────────────────────────
-$('manualPronounceBtn')&&$('manualPronounceBtn').addEventListener('click',()=>{
-    const word=$('manualPronounceInput').value.trim();
-    if(word){
+// ── Document Reader Controls ─────────────────────────────────────────────────
+function buildWordsList(text) {
+    // Simple split by whitespace, keeping punctuation attached (as separate tokens)
+    return text.split(/\s+/).filter(w => w.length > 0).map(w => ({word: w}));
+}
+
+function updateReaderUI() {
+    const total = wordsList.length;
+    const progress = total ? (currentWordIndex / total) * 100 : 0;
+    const fill = $('readingProgressFill');
+    if (fill) fill.style.width = progress + '%';
+    const status = $('readingStatus');
+    if (status) {
+        if (isPlaying) {
+            status.textContent = `🔊 ${currentWordIndex}/${total}`;
+        } else {
+            status.textContent = total ? `⏸️ ${currentWordIndex}/${total}` : 'Not playing';
+        }
+    }
+    const playPauseBtn = $('playPauseBtn');
+    if (playPauseBtn) {
+        playPauseBtn.textContent = isPlaying ? '⏸️ Pause' : '▶️ Play';
+    }
+}
+
+function speakNextWord() {
+    if (!isPlaying) return;
+    if (currentWordIndex >= wordsList.length) {
+        stopReading();
+        showToast('✅ Finished reading');
+        return;
+    }
+    const wordObj = wordsList[currentWordIndex];
+    let voice = selectedVoice;
+    if (!voice) {
+        voice = getBestVoiceForLang(currentLang);
+        if (!voice) { stopReading(); showToast('⚠️ No voice available'); return; }
+        selectedVoice = voice;
+    }
+    const utter = new SpeechSynthesisUtterance(wordObj.word);
+    utter.voice = voice;
+    utter.lang = voice.lang;
+    utter.rate = ttsRate;
+    utter.pitch = ttsPitch;
+    utter.onend = () => {
+        if (isPlaying) {
+            currentWordIndex++;
+            updateReaderUI();
+            speakNextWord();
+        }
+    };
+    utter.onerror = (ev) => {
+        console.warn('TTS error', ev);
+        stopReading();
+        showToast('⚠️ TTS error');
+    };
+    currentUtterance = utter;
+    window.speechSynthesis.speak(utter);
+    updateReaderUI();
+}
+
+function startReading() {
+    if (wordsList.length === 0) return;
+    window.speechSynthesis.cancel();
+    isPlaying = true;
+    if (currentWordIndex >= wordsList.length) currentWordIndex = 0;
+    speakNextWord();
+    updateReaderUI();
+}
+
+function pauseReading() {
+    if (isPlaying) {
+        window.speechSynthesis.cancel();
+        isPlaying = false;
+        currentUtterance = null;
+        updateReaderUI();
+    }
+}
+
+function stopReading() {
+    window.speechSynthesis.cancel();
+    isPlaying = false;
+    currentWordIndex = 0;
+    currentUtterance = null;
+    updateReaderUI();
+}
+
+function togglePlayPause() {
+    if (wordsList.length === 0) {
+        showToast('No document loaded');
+        return;
+    }
+    if (isPlaying) {
+        pauseReading();
+    } else {
+        startReading();
+    }
+}
+
+// Show/hide doc reader controls
+function showDocReader() {
+    const ctrl = $('docReaderControls');
+    if (ctrl) ctrl.style.display = 'block';
+}
+function hideDocReader() {
+    const ctrl = $('docReaderControls');
+    if (ctrl) ctrl.style.display = 'none';
+}
+
+// Get selected text from the document viewer
+function getSelectedText() {
+    const sel = window.getSelection();
+    return sel ? sel.toString().trim() : '';
+}
+
+// Modified manual pronounce handler: if there is a text selection, speak it directly
+function handleManualPronounce(inputEl) {
+    const selected = getSelectedText();
+    if (selected) {
+        // If there's a selection, speak it directly (do not load as document)
+        onSpeak(selected);
+        return;
+    }
+    const word = inputEl.value.trim();
+    if (!word) { showToast('Type a word or select text'); return; }
+    // If text contains spaces or is longer than 20 characters, treat as document
+    if (word.includes(' ') || word.length > 20) {
+        loadPastedText(word);          // load into main viewer
+        inputEl.value = '';             // clear input
+    } else {
         onSpeak(word);
-    } else showToast('Type a word');
+    }
+}
+
+// Attach event listeners for manual pronounce
+$('manualPronounceBtn')&&$('manualPronounceBtn').addEventListener('click',()=>{
+    handleManualPronounce($('manualPronounceInput'));
 });
 $('manualPronounceInput')&&$('manualPronounceInput').addEventListener('keypress',e=>{
-    if(e.key==='Enter') $('manualPronounceBtn').click();
+    if(e.key==='Enter') handleManualPronounce(e.target);
 });
 
-// ── Desktop Feedback ─────────────────────────────────────────────────────────
-$('desktopFeedbackBtn')&&$('desktopFeedbackBtn').addEventListener('click',()=>{
-    $('feedbackModal').classList.add('show');
-    $('bsOverlay').classList.add('show');
-});
-window.closeFeedbackModal=function(){
-    $('feedbackModal').classList.remove('show');
-    $('bsOverlay').classList.remove('show');
-};
-
-// Rate sliders
-$('rateSlider')&&$('rateSlider').addEventListener('input',function(){ttsRate=parseFloat(this.value);$('rateVal').textContent=ttsRate.toFixed(1)+'×';});
-$('pitchSlider')&&$('pitchSlider').addEventListener('input',function(){ttsPitch=parseFloat(this.value);$('pitchVal').textContent=ttsPitch.toFixed(1);});
-$('startRateSlider')&&$('startRateSlider').addEventListener('input',function(){ttsRate=parseFloat(this.value);$('startRateVal').textContent=ttsRate.toFixed(1)+'×';});
-
-// ── Manual Translation (Desktop) ─────────────────────────────────────────────
 $('manualTranslateBtn')&&$('manualTranslateBtn').addEventListener('click',()=>{
     const word=$('manualTranslateInput').value.trim();
     if(word){
@@ -691,9 +834,45 @@ $('manualTranslateInput')&&$('manualTranslateInput').addEventListener('keypress'
     if(e.key==='Enter') $('manualTranslateBtn').click();
 });
 
-// ── PDF Loading ───────────────────────────────────────────────────────────────
+$('desktopFeedbackBtn')&&$('desktopFeedbackBtn').addEventListener('click',()=>{
+    $('feedbackModal').classList.add('show');
+    $('bsOverlay').classList.add('show');
+});
+window.closeFeedbackModal=function(){
+    $('feedbackModal').classList.remove('show');
+    $('bsOverlay').classList.remove('show');
+};
+
+$('rateSlider')&&$('rateSlider').addEventListener('input',function(){ttsRate=parseFloat(this.value);$('rateVal').textContent=ttsRate.toFixed(1)+'×';});
+$('pitchSlider')&&$('pitchSlider').addEventListener('input',function(){ttsPitch=parseFloat(this.value);$('pitchVal').textContent=ttsPitch.toFixed(1);});
+$('startRateSlider')&&$('startRateSlider').addEventListener('input',function(){ttsRate=parseFloat(this.value);$('startRateVal').textContent=ttsRate.toFixed(1)+'×';});
+
+// ── File Loading ─────────────────────────────────────────────────────────────
 $('fileInput')&&$('fileInput').addEventListener('change',e=>{if(e.target.files[0])loadPDF(e.target.files[0]);});
 $('fileInputMobile')&&$('fileInputMobile').addEventListener('change',e=>{if(e.target.files[0])loadPDF(e.target.files[0]);});
+$('textFileInput')&&$('textFileInput').addEventListener('change',e=>{if(e.target.files[0])handleTextFile(e.target.files[0]);});
+$('textFileInputMobile')&&$('textFileInputMobile').addEventListener('change',e=>{if(e.target.files[0])handleTextFile(e.target.files[0]);});
+
+function loadPastedText(text){
+    if (!text) return;
+    textContent = text;
+    currentDocType = 'text';
+    if (pdfDoc) {
+        try{ pdfDoc.destroy(); }catch(e){}
+        pdfDoc = null;
+    }
+    totalPages = 0; currentPage = 1;
+    updateNavButtons();
+    afterTextLoad(); // build words list and show player
+    if (isMobile()) {
+        $('mobileStartScreen').classList.remove('active');
+        $('bookReader').classList.add('active');
+        renderTextViewer(text);
+    } else {
+        renderDesktopTextViewer(text);
+    }
+    showToast('✅ Text loaded');
+}
 
 async function loadPDF(file){
     showToast('⏳ Loading PDF…');
@@ -703,6 +882,9 @@ async function loadPDF(file){
         pdfDoc=await pdfjsLib.getDocument({data:buf}).promise;
         totalPages=pdfDoc.numPages;currentPage=1;
         mobileUserScale=1.0;desktopScale=DESKTOP_BASE;
+        currentDocType = 'pdf';
+        hideDocReader(); // no player for PDF
+        wordsList = [];
         updateZoomBadges();updateNavButtons();
         if(isMobile()){
             $('mobileStartScreen').classList.remove('active');
@@ -715,31 +897,172 @@ async function loadPDF(file){
     }catch(err){showToast('❌ Failed to load PDF');console.error(err);}
 }
 
-// ── Mobile Bottom Nav ─────────────────────────────────────────────────────────
-$('bnChangePdf').addEventListener('click',()=>{$('fileInputMobile').click();});
-$('bnTools').addEventListener('click',()=>openBottomSheet('speak'));
-$('bnHistory').addEventListener('click',()=>openBottomSheet('history'));
-$('bnTranslate').addEventListener('click',()=>openBottomSheet('translate'));
-$('bnFeedback').addEventListener('click',()=>{
-    $('feedbackModal').classList.add('show');
-    $('bsOverlay').classList.add('show');
-});
+async function handleTextFile(file) {
+    if (!file) return;
+    showToast('⏳ Loading document...');
+    const ext = file.name.split('.').pop().toLowerCase();
+    try {
+        let text = '';
+        if (ext === 'txt') {
+            text = await file.text();
+        } else if (ext === 'docx') {
+            const arrayBuf = await file.arrayBuffer();
+            const result = await mammoth.extractRawText({ arrayBuffer: arrayBuf });
+            text = result.value;
+        } else if (ext === 'doc') {
+            showToast('⚠️ .doc files are not supported. Please save as .docx or .txt.');
+            return;
+        } else {
+            showToast('❌ Unsupported file type');
+            return;
+        }
+        textContent = text;
+        currentDocType = 'text';
+        if (pdfDoc) {
+            try{ pdfDoc.destroy(); }catch(e){}
+            pdfDoc = null;
+        }
+        totalPages = 0; currentPage = 1;
+        updateNavButtons();
+        afterTextLoad();
+        if (isMobile()) {
+            $('mobileStartScreen').classList.remove('active');
+            $('bookReader').classList.add('active');
+            await renderTextViewer(text);
+        } else {
+            await renderDesktopTextViewer(text);
+        }
+        showToast(`✅ Loaded: ${file.name}`);
+    } catch (err) {
+        console.error(err);
+        showToast('❌ Failed to load document');
+    }
+}
 
-// ── Zoom ──────────────────────────────────────────────────────────────────────
-async function zoomDesktop(s){desktopScale=Math.min(DESKTOP_MAX,Math.max(DESKTOP_MIN,s));updateZoomBadges();if(pdfDoc)await renderDesktopPage(currentPage);}
+function afterTextLoad() {
+    wordsList = buildWordsList(textContent);
+    currentWordIndex = 0;
+    isPlaying = false;
+    currentUtterance = null;
+    updateReaderUI();
+    showDocReader();
+}
+
+async function renderDesktopTextViewer(text) {
+    const container = $('pdfContainer');
+    container.innerHTML = '';
+
+    const wrapper = document.createElement('div');
+    wrapper.className = 'page-wrapper';
+    wrapper.style.width = '100%';
+    wrapper.style.height = 'auto';
+    wrapper.style.background = '#09091a';
+    wrapper.style.padding = '20px';
+    wrapper.style.overflowY = 'auto';
+    wrapper.style.maxHeight = 'calc(100dvh - 300px)';
+
+    const lines = text.split(/\r?\n/);
+    lines.forEach(line => {
+        if (line.trim() === '') {
+            const br = document.createElement('div');
+            br.style.height = '1em';
+            wrapper.appendChild(br);
+            return;
+        }
+        const words = line.match(/\S+\s*/g) || [line];
+        const lineDiv = document.createElement('div');
+        lineDiv.style.marginBottom = '0.2em';
+        lineDiv.style.whiteSpace = 'pre-wrap';
+        lineDiv.style.wordBreak = 'break-word';
+        words.forEach(word => {
+            if (!word.trim()) return;
+            const span = document.createElement('span');
+            span.textContent = word;
+            span.dataset.text = word.trim();
+            span.style.cursor = 'pointer';
+            span.style.display = 'inline';
+            span.style.padding = '0 1px 0 0';
+            attachClickGestures(span);
+            lineDiv.appendChild(span);
+        });
+        wrapper.appendChild(lineDiv);
+    });
+
+    container.appendChild(wrapper);
+    updateNavButtons();
+}
+
+async function renderTextViewer(text) {
+    const pageContainer = $('bookPage');
+    pageContainer.innerHTML = '';
+
+    const scrollDiv = document.createElement('div');
+    scrollDiv.style.width = '100%';
+    scrollDiv.style.height = '100%';
+    scrollDiv.style.overflowY = 'auto';
+    scrollDiv.style.padding = '20px';
+    scrollDiv.style.background = '#0a0a18';
+    scrollDiv.style.boxSizing = 'border-box';
+
+    const lines = text.split(/\r?\n/);
+    lines.forEach(line => {
+        if (line.trim() === '') {
+            const spacer = document.createElement('div');
+            spacer.style.height = '1em';
+            scrollDiv.appendChild(spacer);
+            return;
+        }
+        const words = line.match(/\S+\s*/g) || [line];
+        const lineDiv = document.createElement('div');
+        lineDiv.style.marginBottom = '0.2em';
+        lineDiv.style.whiteSpace = 'pre-wrap';
+        lineDiv.style.wordBreak = 'break-word';
+        words.forEach(word => {
+            if (!word.trim()) return;
+            const span = document.createElement('span');
+            span.textContent = word;
+            span.dataset.text = word.trim();
+            span.style.cursor = 'pointer';
+            span.style.display = 'inline';
+            span.style.padding = '2px 1px 2px 0';
+            attachTouchGestures(span);
+            lineDiv.appendChild(span);
+        });
+        scrollDiv.appendChild(lineDiv);
+    });
+
+    pageContainer.appendChild(scrollDiv);
+    $('readingProgress').style.width = '0%';
+}
+
+function updateNavButtons(){
+    if (currentDocType !== 'pdf') {
+        if($('prevPage')) $('prevPage').disabled = true;
+        if($('nextPage')) $('nextPage').disabled = true;
+        if($('pageInfo')) $('pageInfo').textContent = 'Text';
+        if($('mobilePageInfo')) $('mobilePageInfo').textContent = 'Text';
+        return;
+    }
+    if($('prevPage'))$('prevPage').disabled=!pdfDoc||currentPage===1;
+    if($('nextPage'))$('nextPage').disabled=!pdfDoc||currentPage===totalPages;
+    if($('pageInfo'))$('pageInfo').textContent=pdfDoc?`${currentPage} / ${totalPages}`:'1 / 1';
+    if($('mobilePageInfo'))$('mobilePageInfo').textContent=pdfDoc?`${currentPage} / ${totalPages}`:'— / —';
+}
+
+async function zoomDesktop(s){desktopScale=Math.min(DESKTOP_MAX,Math.max(DESKTOP_MIN,s));updateZoomBadges();if(pdfDoc && currentDocType==='pdf')await renderDesktopPage(currentPage);}
 $('zoomIn')&&$('zoomIn').addEventListener('click',()=>zoomDesktop(desktopScale+DESKTOP_STEP));
 $('zoomOut')&&$('zoomOut').addEventListener('click',()=>zoomDesktop(desktopScale-DESKTOP_STEP));
 $('zoomReset')&&$('zoomReset').addEventListener('click',()=>zoomDesktop(DESKTOP_BASE));
 $('pdfViewer')&&$('pdfViewer').addEventListener('wheel',e=>{if(e.ctrlKey){e.preventDefault();zoomDesktop(desktopScale+(e.deltaY<0?DESKTOP_STEP:-DESKTOP_STEP));}},{passive:false});
 
-async function zoomMobile(s){mobileUserScale=Math.min(MOBILE_MAX,Math.max(MOBILE_MIN,s));updateZoomBadges();if(pdfDoc)await renderBookPage(currentPage);}
+async function zoomMobile(s){mobileUserScale=Math.min(MOBILE_MAX,Math.max(MOBILE_MIN,s));updateZoomBadges();if(pdfDoc && currentDocType==='pdf')await renderBookPage(currentPage);}
 $('tbZoomIn')&&$('tbZoomIn').addEventListener('click',()=>zoomMobile(mobileUserScale+MOBILE_STEP));
 $('tbZoomOut')&&$('tbZoomOut').addEventListener('click',()=>zoomMobile(mobileUserScale-MOBILE_STEP));
 $('tbZoomReset')&&$('tbZoomReset').addEventListener('click',()=>zoomMobile(1.0));
 
-// ── Page Rendering (Mobile with horizontal scroll) ───────────────────────────
+// PDF rendering (unchanged)
 async function renderBookPage(num){
-    if(!pdfDoc)return;
+    if(!pdfDoc || currentDocType!=='pdf')return;
     updateNavButtons();
     const page=await pdfDoc.getPage(num);
     const vp0=page.getViewport({scale:1});
@@ -787,9 +1110,8 @@ async function renderBookPage(num){
     $('readingProgress').style.width=((currentPage/totalPages)*100)+'%';
 }
 
-// ── DESKTOP RENDERING ────────────────────────────────────────────────────────
 async function renderDesktopPage(num){
-    if(!pdfDoc)return;
+    if(!pdfDoc || currentDocType!=='pdf')return;
     const page=await pdfDoc.getPage(num);
     const vp=page.getViewport({scale:desktopScale});
     const pdfContainer=$('pdfContainer');pdfContainer.innerHTML='';
@@ -821,29 +1143,22 @@ async function renderDesktopPage(num){
     updateNavButtons();
 }
 
-function updateNavButtons(){
-    if($('prevPage'))$('prevPage').disabled=!pdfDoc||currentPage===1;
-    if($('nextPage'))$('nextPage').disabled=!pdfDoc||currentPage===totalPages;
-    if($('pageInfo'))$('pageInfo').textContent=pdfDoc?`${currentPage} / ${totalPages}`:'1 / 1';
-    if($('mobilePageInfo'))$('mobilePageInfo').textContent=pdfDoc?`${currentPage} / ${totalPages}`:'— / —';
-}
+$('tbPrev')&&$('tbPrev').addEventListener('click',()=>{if(pdfDoc&&currentDocType==='pdf'&&currentPage>1){currentPage--;renderBookPage(currentPage);}});
+$('tbNext')&&$('tbNext').addEventListener('click',()=>{if(pdfDoc&&currentDocType==='pdf'&&currentPage<totalPages){currentPage++;renderBookPage(currentPage);}});
+$('prevPage')&&$('prevPage').addEventListener('click',()=>{if(pdfDoc&&currentDocType==='pdf'&&currentPage>1){currentPage--;renderDesktopPage(currentPage);}});
+$('nextPage')&&$('nextPage').addEventListener('click',()=>{if(pdfDoc&&currentDocType==='pdf'&&currentPage<totalPages){currentPage++;renderDesktopPage(currentPage);}});
 
-$('tbPrev')&&$('tbPrev').addEventListener('click',()=>{if(pdfDoc&&currentPage>1){currentPage--;renderBookPage(currentPage);}});
-$('tbNext')&&$('tbNext').addEventListener('click',()=>{if(pdfDoc&&currentPage<totalPages){currentPage++;renderBookPage(currentPage);}});
-$('prevPage')&&$('prevPage').addEventListener('click',()=>{if(pdfDoc&&currentPage>1){currentPage--;renderDesktopPage(currentPage);}});
-$('nextPage')&&$('nextPage').addEventListener('click',()=>{if(pdfDoc&&currentPage<totalPages){currentPage++;renderDesktopPage(currentPage);}});
-
-// Keyboard navigation (desktop)
 document.addEventListener('keydown',e=>{
-    if(!pdfDoc||isMobile())return;
+    if(!pdfDoc||isMobile()||currentDocType!=='pdf')return;
     if(e.key==='ArrowRight'||e.key==='ArrowDown'){if(currentPage<totalPages){currentPage++;renderDesktopPage(currentPage);}}
     if(e.key==='ArrowLeft'||e.key==='ArrowUp'){if(currentPage>1){currentPage--;renderDesktopPage(currentPage);}}
 });
 
-// ── Swipe Navigation (Mobile) ─────────────────────────────────────────────────
-let swipeStartX=null,swipeStartY=null,swipeStartTime=null;
+// Swipe & pinch only for PDFs (mobile)
 const bookReader=$('bookReader');
+let swipeStartX=null,swipeStartY=null,swipeStartTime=null;
 bookReader.addEventListener('touchstart',e=>{
+    if(currentDocType!=='pdf') return;
     if(e.touches.length===1){
         swipeStartX=e.touches[0].clientX;
         swipeStartY=e.touches[0].clientY;
@@ -851,7 +1166,7 @@ bookReader.addEventListener('touchstart',e=>{
     }
 },{passive:true});
 bookReader.addEventListener('touchend',e=>{
-    if(swipeStartX===null)return;
+    if(swipeStartX===null || currentDocType!=='pdf')return;
     const dx=e.changedTouches[0].clientX-swipeStartX;
     const dy=e.changedTouches[0].clientY-swipeStartY;
     const dt=Date.now()-swipeStartTime;
@@ -862,9 +1177,9 @@ bookReader.addEventListener('touchend',e=>{
     swipeStartX=null;
 },{passive:true});
 
-// ── Pinch-to-Zoom (Mobile) ────────────────────────────────────────────────────
 let pinchStartDist=null,pinchStartScale=1.0;
 bookReader.addEventListener('touchstart',e=>{
+    if(currentDocType!=='pdf') return;
     if(e.touches.length===2){
         pinchStartDist=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);
         pinchStartScale=mobileUserScale;
@@ -872,7 +1187,7 @@ bookReader.addEventListener('touchstart',e=>{
     }
 },{passive:true});
 bookReader.addEventListener('touchmove',e=>{
-    if(e.touches.length===2&&pinchStartDist){
+    if(e.touches.length===2&&pinchStartDist && currentDocType==='pdf'){
         const dist=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);
         const newScale=pinchStartScale*(dist/pinchStartDist);
         mobileUserScale=Math.min(MOBILE_MAX,Math.max(MOBILE_MIN,newScale));
@@ -880,13 +1195,13 @@ bookReader.addEventListener('touchmove',e=>{
     }
 },{passive:true});
 bookReader.addEventListener('touchend',e=>{
-    if(pinchStartDist!==null&&e.touches.length<2){
+    if(pinchStartDist!==null && currentDocType==='pdf' && e.touches.length<2){
         pinchStartDist=null;
         if(pdfDoc)renderBookPage(currentPage);
     }
 },{passive:true});
 
-// ── Gestures ──────────────────────────────────────────────────────────────────
+// Gestures (unchanged)
 function attachClickGestures(span){
     let clicks=0,timer;
     span.addEventListener('click',e=>{
@@ -954,8 +1269,8 @@ function attachTouchGestures(span){
     }, {passive:true});
 }
 
-// ── Speak & Translate (with robust voice selection) ─────────────────────────
 function onSpeak(text){
+    if (isPlaying) stopReading();
     bsCurrentWord=text; addHistory(text,'speak');
     if($('pronuncBox')){
         $('pronuncBox').style.display='block';
@@ -976,7 +1291,7 @@ function speakText(text){
     window.speechSynthesis.cancel();
     const u=new SpeechSynthesisUtterance(text);
     u.voice=voice;
-    u.lang = voice.lang; // crucial for correct pronunciation
+    u.lang = voice.lang;
     u.rate=ttsRate; u.pitch=ttsPitch; u.volume=1.0;
     showToast('🔊 '+text,1800);
     window.speechSynthesis.speak(u);
@@ -999,42 +1314,66 @@ function onTranslate(text){
     translateText(text, currentLang, false);
 }
 
+// Enhanced translateText with fallback
 async function translateText(text, srcLang, autoSpeak = false){
     const placeholder='<span style="color:var(--muted);font-style:italic">⏳ Translating…</span>';
     $('translationResult').innerHTML=placeholder;
     if(isMobile() && bsActiveTab==='translate') renderBsTab('translate');
-    try{
+    let translation = null;
+    // Try MyMemory
+    try {
         const res=await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=${srcLang}|en`);
         const data=await res.json();
         if(data.responseStatus===200){
-            const tr=data.responseData.translatedText; bsCurrentTranslation=tr;
-            const safetr=escHtml(tr.replace(/'/g,"\\'"));
-            const html=`
-                <div style="margin-bottom:8px">
-                    <span style="font-size:.7rem;color:var(--muted);text-transform:uppercase;">Word</span><br>
-                    <span style="color:var(--accent);font-weight:bold;font-size:1rem;">${escHtml(text)}</span>
-                </div>
-                <div style="height:1px;background:rgba(255,255,255,.07);margin:8px 0;"></div>
-                <div>
-                    <span style="font-size:.7rem;color:var(--muted);text-transform:uppercase;">English Meaning</span><br>
-                    <div style="display:flex;align-items:center;gap:10px;margin-top:5px;flex-wrap:wrap;">
-                        <span style="color:var(--text);font-size:1.05rem;flex:1;">${escHtml(tr)}</span>
-                        <button onclick="window.speakTranslation('${safetr}')" class="btn btn-sm" style="padding:5px 12px;font-size:0.75rem;background:rgba(0,229,255,.15);border:1px solid var(--accent);color:var(--accent);border-radius:8px;min-height:auto;">🔊 Listen</button>
-                    </div>
-                </div>`;
-            $('translationResult').innerHTML=html;
-            if(autoSpeak) window.speakTranslation(tr);
+            translation = data.responseData.translatedText;
         } else {
-            $('translationResult').innerHTML='<span style="color:#ff6b6b">❌ Translation failed.</span>';
+            throw new Error('MyMemory failed');
         }
-        if(isMobile() && bsActiveTab==='translate') renderBsTab('translate');
-    }catch(err){
-        $('translationResult').innerHTML='<span style="color:#ff6b6b">❌ Network error.</span>';
-        if(isMobile() && bsActiveTab==='translate') renderBsTab('translate');
+    } catch(err) {
+        console.warn('MyMemory error, trying fallback...', err);
+        // Fallback: LibreTranslate public instance
+        try {
+            const fallbackRes = await fetch('https://libretranslate.de/translate', {
+                method: 'POST',
+                body: JSON.stringify({
+                    q: text,
+                    source: srcLang,
+                    target: 'en',
+                    format: 'text'
+                }),
+                headers: { 'Content-Type': 'application/json' }
+            });
+            const fallbackData = await fallbackRes.json();
+            translation = fallbackData.translatedText;
+        } catch (fallbackErr) {
+            console.error('Fallback also failed', fallbackErr);
+            $('translationResult').innerHTML = '<span style="color:#ff6b6b">❌ Translation unavailable. Check network.</span>';
+            return;
+        }
     }
+    if (translation) {
+        bsCurrentTranslation = translation;
+        const safetr = escHtml(translation.replace(/'/g, "\\'"));
+        const html = `
+            <div style="margin-bottom:8px">
+                <span style="font-size:.7rem;color:var(--muted);text-transform:uppercase;">Word</span><br>
+                <span style="color:var(--accent);font-weight:bold;font-size:1rem;">${escHtml(text)}</span>
+            </div>
+            <div style="height:1px;background:rgba(255,255,255,.07);margin:8px 0;"></div>
+            <div>
+                <span style="font-size:.7rem;color:var(--muted);text-transform:uppercase;">English Meaning</span><br>
+                <div style="display:flex;align-items:center;gap:10px;margin-top:5px;flex-wrap:wrap;">
+                    <span style="color:var(--text);font-size:1.05rem;flex:1;">${escHtml(translation)}</span>
+                    <button onclick="window.speakTranslation('${safetr}')" class="btn btn-sm" style="padding:5px 12px;font-size:0.75rem;background:rgba(0,229,255,.15);border:1px solid var(--accent);color:var(--accent);border-radius:8px;min-height:auto;">🔊 Listen</button>
+                </div>
+            </div>`;
+        $('translationResult').innerHTML = html;
+        if(autoSpeak) window.speakTranslation(translation);
+    }
+    if(isMobile() && bsActiveTab==='translate') renderBsTab('translate');
 }
 
-// ── Bottom Sheet ──────────────────────────────────────────────────────────────
+// Bottom sheet functions (unchanged, with selection support in voice tab)
 function openBottomSheet(tab){
     bsActiveTab=tab;
     $('bsOverlay').classList.add('show');
@@ -1063,11 +1402,11 @@ function renderBsTab(t){
             <div style="margin-bottom:12px;">
                 <div style="font-size:.7rem;color:var(--muted);font-weight:700;text-transform:uppercase;margin-bottom:6px;">✍️ Write to Pronounce</div>
                 <div class="manual-pronounce" style="margin-bottom:8px;">
-                    <input type="text" id="bsManualPronounceInput" placeholder="Type a word..." style="flex:1;background:var(--card2);border:1px solid var(--border);border-radius:8px;color:var(--text);padding:8px 10px;font-size:14px;">
+                    <input type="text" id="bsManualPronounceInput" placeholder="Type a word... (select text to speak selection)" style="flex:1;background:var(--card2);border:1px solid var(--border);border-radius:8px;color:var(--text);padding:8px 10px;font-size:14px;max-height:80px; overflow-y:auto; resize:vertical;">
                     <button class="btn-zoom" id="bsManualPronounceBtn" style="padding:6px 12px;">🔊 Speak</button>
                 </div>
                 <div style="font-size:.7rem;color:var(--muted);font-weight:700;text-transform:uppercase;margin-bottom:6px;">🔊 Last Word</div>
-                <div style="background:var(--card2);border-radius:10px;padding:10px 14px;font-size:1rem;font-weight:700;color:var(--accent);min-height:40px;">${escHtml(bsCurrentWord)||'<span style="color:var(--muted);font-style:italic;font-size:.85rem;">Tap a word in the PDF</span>'}</div>
+                <div style="background:var(--card2);border-radius:10px;padding:10px 14px;font-size:1rem;font-weight:700;color:var(--accent);min-height:40px;">${escHtml(bsCurrentWord)||'<span style="color:var(--muted);font-style:italic;font-size:.85rem;">Tap a word in the document</span>'}</div>
             </div>
             <div style="display:flex;gap:10px;margin-bottom:16px;">
                 <button class="btn" style="flex:1" id="bsReplay">▶️ Speak Again</button>
@@ -1086,7 +1425,6 @@ function renderBsTab(t){
                 <input type="range" id="bsPitch" min=".5" max="2" step=".1" value="${ttsPitch}" style="width:100%;accent-color:var(--primary);margin-top:5px;height:6px;">
             </div>`;
         const vs=$('bsVoiceSelect');
-        // Build voice list for current language
         let filtered = allVoices.filter(v=>{
             const vLang = v.lang.toLowerCase();
             const bcpTarget = LANG_BCP[currentLang] || currentLang;
@@ -1119,20 +1457,31 @@ function renderBsTab(t){
         $('bsReplay').addEventListener('click',()=>{if(bsCurrentWord)onSpeak(bsCurrentWord);else showToast('Tap a word first');});
         $('bsStop').addEventListener('click',()=>{window.speechSynthesis.cancel();showToast('⏹ Stopped');});
         
-        // Manual pronounce in bottom sheet
-        $('bsManualPronounceBtn').addEventListener('click',()=>{
-            const word=$('bsManualPronounceInput').value.trim();
-            if(word) onSpeak(word);
-            else showToast('Type a word');
-        });
+        function handleBsManualPronounce() {
+            const selected = getSelectedText();
+            if (selected) {
+                onSpeak(selected);
+                return;
+            }
+            const word = $('bsManualPronounceInput').value.trim();
+            if (!word) { showToast('Type a word or select text'); return; }
+            if (word.includes(' ') || word.length > 20) {
+                loadPastedText(word);
+                $('bsManualPronounceInput').value = '';
+                closeBottomSheet();
+            } else {
+                onSpeak(word);
+            }
+        }
+        $('bsManualPronounceBtn').addEventListener('click', handleBsManualPronounce);
         $('bsManualPronounceInput').addEventListener('keypress',e=>{
-            if(e.key==='Enter') $('bsManualPronounceBtn').click();
+            if(e.key==='Enter') handleBsManualPronounce();
         });
     }
     else if(t==='translate'){
         content.innerHTML=`
             <div class="manual-translate" style="margin-bottom:12px;">
-                <input type="text" id="bsManualInput" placeholder="Type a word..." style="flex:1;background:var(--card2);border:1px solid var(--border);border-radius:8px;color:var(--text);padding:10px;font-size:16px;">
+                <input type="text" id="bsManualInput" placeholder="Type a word..." style="flex:1;background:var(--card2);border:1px solid var(--border);border-radius:8px;color:var(--text);padding:10px;font-size:16px;max-height:80px; overflow-y:auto; resize:vertical;">
                 <button class="btn-zoom" id="bsManualBtn" style="padding:8px 14px;">🔍</button>
             </div>
             <div class="translation-box" style="min-height:80px;" id="bsTranslationResult">${$('translationResult') ? $('translationResult').innerHTML : '<span style="color:var(--muted);">Type a word above</span>'}</div>
@@ -1179,19 +1528,22 @@ function renderBsTab(t){
             </div>
             <div style="background:var(--card2);border-radius:12px;padding:14px;font-size:.82rem;color:var(--muted);line-height:1.8;">
                 <div style="font-weight:700;color:var(--text);margin-bottom:8px;">📖 How to Use</div>
-                <div>👆 <strong style="color:var(--text);">Tap</strong> a word → Speak it aloud (Google voice preferred)</div>
+                <div>👆 <strong style="color:var(--text);">Tap</strong> a word → Speak it aloud</div>
                 <div>⏱️ <strong style="color:var(--text);">Hold 3s</strong> on a word → Translate & speak English meaning</div>
-                <div>⬅ ➡ <strong style="color:var(--text);">Swipe</strong> left/right → Change page</div>
-                <div>🤏 <strong style="color:var(--text);">Pinch</strong> → Zoom in/out</div>
+                <div>🔹 <strong style="color:var(--text);">Select text</strong> → click "Speak" to read the selection</div>
+                <div>⬅ ➡ <strong style="color:var(--text);">Swipe</strong> left/right → Change page (PDF only)</div>
+                <div>🤏 <strong style="color:var(--text);">Pinch</strong> → Zoom in/out (PDF only)</div>
                 <div>📂 <strong style="color:var(--text);">PDF</strong> button → Load new PDF</div>
-                <div>📝 <strong style="color:var(--text);">Type</strong> a word in Voice/Meaning tab → Pronounce or translate any word</div>
+                <div>📄 <strong style="color:var(--text);">Upload Text/Word</strong> → Load plain text or Word document</div>
+                <div>⌨️ <strong style="color:var(--text);">Type</strong> a word in Voice/Meaning tab → Pronounce or translate any word</div>
+                <div>📏 <strong style="color:var(--text);">Long text</strong> in Pronunciation input (longer than 20 chars or with spaces) will be loaded as a new document</div>
+                <div>🎵 <strong style="color:var(--text);">Document Player</strong> (appears for text) – Play/pause/stop the whole document with progress bar.</div>
             </div>`;
         $('bsLangSelect').value=currentLang;
         $('bsLangSelect').addEventListener('change',e=>{onLangChange(e.target.value);showToast('🌐 Language changed');});
     }
 }
 
-// ── History ───────────────────────────────────────────────────────────────────
 function addHistory(text,type){
     historyArr.unshift({text,type});if(historyArr.length>30)historyArr.pop();
     const hl=$('historyList');if(!hl)return;hl.innerHTML='';
@@ -1202,6 +1554,10 @@ function addHistory(text,type){
         hl.appendChild(li);
     });
 }
+
+// Attach player buttons
+$('playPauseBtn')?.addEventListener('click', togglePlayPause);
+$('stopBtn')?.addEventListener('click', stopReading);
 
 })();
 </script>
