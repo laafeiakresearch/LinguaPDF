@@ -79,6 +79,11 @@
         .h-text{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;color:var(--muted)}
         .history-empty{color:var(--muted);font-style:italic;font-size:.82rem;text-align:center;padding:10px}
 
+        /* Extra text viewer (split-screen) */
+        #extraTextViewer{width:100%;overflow:auto;background:#09091a;border-radius:12px;max-height:300px;min-height:150px;border:1px solid rgba(255,255,255,.04); margin-top:10px; display:none;}
+        .extra-text-container{padding:12px; white-space:pre-wrap; word-break:break-word;}
+        .extra-text-container span{cursor:pointer; display:inline; padding:0 1px 0 0;}
+
         /* Document reader player */
         .doc-reader{background:var(--card2);border-radius:10px;padding:12px;margin-bottom:12px; border:1px solid rgba(255,255,255,.04);}
         .doc-reader .row{display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap;}
@@ -271,7 +276,6 @@
             <label style="font-size:0.7rem;color:var(--primary);font-weight:bold;">📄 Upload Text/Word</label>
             <input type="file" id="textFileInputMobile" accept=".txt,.docx,.doc" style="border-color:var(--primary);background:rgba(124,111,255,0.05);">
         </div>
-        <!-- Removed separate paste text area; now use pronunciation input -->
     </div>
 </div>
 
@@ -378,7 +382,6 @@
             <label>📄 Upload Text/Word</label>
             <input type="file" id="textFileInput" accept=".txt,.docx,.doc">
         </div>
-        <!-- Removed separate paste text area -->
         <button class="btn" id="activateBtn">🔊 Activate Voice</button>
         <button class="btn btn-sm" id="desktopFeedbackBtn">💬 Feedback</button>
     </div>
@@ -405,11 +408,15 @@
                     </div>
                 </div>
             </div>
+            <!-- Extra text viewer for split-screen -->
+            <div id="extraTextViewer" style="display:none; overflow:auto; background:#09091a; border-radius:12px; max-height:300px; min-height:150px; border:1px solid rgba(255,255,255,.04); margin-top:10px;">
+                <div class="extra-text-container" id="extraTextContainer"></div>
+            </div>
         </div>
         <div class="sidebar">
             <div class="panel">
                 <div class="panel-title"><span class="dot"></span> Pronunciation</div>
-                <!-- Document reader player (visible only for text) -->
+                <!-- Document reader player (visible only for main text) -->
                 <div class="doc-reader" id="docReaderControls" style="display:none;">
                     <div class="row">
                         <button class="btn-zoom" id="playPauseBtn">▶️ Play</button>
@@ -476,11 +483,15 @@ const MOBILE_MIN=0.5,MOBILE_MAX=4.0,MOBILE_STEP=0.25;
 let currentDocType = 'pdf'; // 'pdf', 'text', 'word'
 let textContent = '';
 
-// Document reader variables
+// Document reader variables (for main text)
 let wordsList = [];          // array of {word: string}
 let currentWordIndex = 0;
 let isPlaying = false;
 let currentUtterance = null;
+
+// Extra text viewer (split-screen)
+let extraTextContent = '';
+let extraViewerActive = false;
 
 // ── Language to BCP-47 mapping ───────────────────────────────────────────────
 const LANG_BCP = {
@@ -575,9 +586,10 @@ function restartApp(){
     currentPage=1; totalPages=0;
     currentDocType = 'pdf';
     textContent = '';
-    wordsList = [];
-    currentWordIndex = 0;
+    extraTextContent = '';
+    extraViewerActive = false;
     hideDocReader();
+    hideExtraViewer();
     if(isMobile()){
         $('bookReader').classList.remove('active');
         $('mobileStartScreen').classList.add('active');
@@ -682,7 +694,6 @@ $('voiceSampleDesktop')&&$('voiceSampleDesktop').addEventListener('click',()=>{
 
 // ── Document Reader Controls ─────────────────────────────────────────────────
 function buildWordsList(text) {
-    // Simple split by whitespace, keeping punctuation attached (as separate tokens)
     return text.split(/\s+/).filter(w => w.length > 0).map(w => ({word: w}));
 }
 
@@ -779,7 +790,6 @@ function togglePlayPause() {
     }
 }
 
-// Show/hide doc reader controls
 function showDocReader() {
     const ctrl = $('docReaderControls');
     if (ctrl) ctrl.style.display = 'block';
@@ -789,26 +799,83 @@ function hideDocReader() {
     if (ctrl) ctrl.style.display = 'none';
 }
 
-// Get selected text from the document viewer
+// Extra viewer functions
+function showExtraViewer() {
+    const viewer = $('extraTextViewer');
+    if (viewer) viewer.style.display = 'block';
+    extraViewerActive = true;
+}
+function hideExtraViewer() {
+    const viewer = $('extraTextViewer');
+    if (viewer) viewer.style.display = 'none';
+    extraViewerActive = false;
+}
+
+function renderExtraText(text) {
+    const container = $('extraTextContainer');
+    if (!container) return;
+    container.innerHTML = '';
+    const lines = text.split(/\r?\n/);
+    lines.forEach(line => {
+        if (line.trim() === '') {
+            const br = document.createElement('div');
+            br.style.height = '1em';
+            container.appendChild(br);
+            return;
+        }
+        const words = line.match(/\S+\s*/g) || [line];
+        const lineDiv = document.createElement('div');
+        lineDiv.style.marginBottom = '0.2em';
+        lineDiv.style.whiteSpace = 'pre-wrap';
+        lineDiv.style.wordBreak = 'break-word';
+        words.forEach(word => {
+            if (!word.trim()) return;
+            const span = document.createElement('span');
+            span.textContent = word;
+            span.dataset.text = word.trim();
+            span.style.cursor = 'pointer';
+            span.style.display = 'inline';
+            span.style.padding = '0 1px 0 0';
+            attachClickGestures(span); // desktop gestures
+            lineDiv.appendChild(span);
+        });
+        container.appendChild(lineDiv);
+    });
+    showExtraViewer();
+}
+
+// Get selected text from the main document (PDF or main text)
 function getSelectedText() {
     const sel = window.getSelection();
     return sel ? sel.toString().trim() : '';
 }
 
-// Modified manual pronounce handler: if there is a text selection, speak it directly
+// Modified manual pronounce handler: supports split-screen
 function handleManualPronounce(inputEl) {
     const selected = getSelectedText();
     if (selected) {
-        // If there's a selection, speak it directly (do not load as document)
         onSpeak(selected);
         return;
     }
     const word = inputEl.value.trim();
     if (!word) { showToast('Type a word or select text'); return; }
-    // If text contains spaces or is longer than 20 characters, treat as document
-    if (word.includes(' ') || word.length > 20) {
-        loadPastedText(word);          // load into main viewer
-        inputEl.value = '';             // clear input
+    
+    const wordCount = word.split(/\s+/).length;
+    // If >=10 words and a PDF is loaded, show in extra viewer (split-screen)
+    if (wordCount >= 10 && currentDocType === 'pdf' && !isMobile()) {
+        extraTextContent = word;
+        renderExtraText(word);
+        inputEl.value = '';
+        showToast('Text added to split viewer');
+    } else if (wordCount >= 10 && currentDocType === 'pdf' && isMobile()) {
+        // On mobile, replace PDF with text (show warning)
+        showToast('PDF replaced with text (screen too small for split)');
+        loadPastedText(word);
+        inputEl.value = '';
+    } else if (word.includes(' ') || word.length > 20) {
+        // Load as main document (replaces whatever is there)
+        loadPastedText(word);
+        inputEl.value = '';
     } else {
         onSpeak(word);
     }
@@ -855,6 +922,10 @@ $('textFileInputMobile')&&$('textFileInputMobile').addEventListener('change',e=>
 
 function loadPastedText(text){
     if (!text) return;
+    // Clear extra viewer
+    hideExtraViewer();
+    extraTextContent = '';
+    
     textContent = text;
     currentDocType = 'text';
     if (pdfDoc) {
@@ -884,6 +955,7 @@ async function loadPDF(file){
         mobileUserScale=1.0;desktopScale=DESKTOP_BASE;
         currentDocType = 'pdf';
         hideDocReader(); // no player for PDF
+        hideExtraViewer(); // clear any extra text
         wordsList = [];
         updateZoomBadges();updateNavButtons();
         if(isMobile()){
@@ -916,6 +988,10 @@ async function handleTextFile(file) {
             showToast('❌ Unsupported file type');
             return;
         }
+        // Clear extra viewer
+        hideExtraViewer();
+        extraTextContent = '';
+        
         textContent = text;
         currentDocType = 'text';
         if (pdfDoc) {
@@ -1465,6 +1541,7 @@ function renderBsTab(t){
             }
             const word = $('bsManualPronounceInput').value.trim();
             if (!word) { showToast('Type a word or select text'); return; }
+            // For bottom sheet, we won't implement split-screen; just handle as text.
             if (word.includes(' ') || word.length > 20) {
                 loadPastedText(word);
                 $('bsManualPronounceInput').value = '';
@@ -1538,6 +1615,7 @@ function renderBsTab(t){
                 <div>⌨️ <strong style="color:var(--text);">Type</strong> a word in Voice/Meaning tab → Pronounce or translate any word</div>
                 <div>📏 <strong style="color:var(--text);">Long text</strong> in Pronunciation input (longer than 20 chars or with spaces) will be loaded as a new document</div>
                 <div>🎵 <strong style="color:var(--text);">Document Player</strong> (appears for text) – Play/pause/stop the whole document with progress bar.</div>
+                <div>🖥️ <strong style="color:var(--text);">Split-screen</strong> (desktop): If a PDF is loaded and you paste 10+ words, they appear below the PDF.</div>
             </div>`;
         $('bsLangSelect').value=currentLang;
         $('bsLangSelect').addEventListener('change',e=>{onLangChange(e.target.value);showToast('🌐 Language changed');});
