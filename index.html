@@ -268,6 +268,7 @@
                 <option value="tr">🇹🇷 Turkish</option><option value="uk">🇺🇦 Ukrainian</option>
                 <option value="ur">🇵🇰 Urdu</option><option value="vi">🇻🇳 Vietnamese</option>
                 <option value="zu">🇿🇦 Zulu</option>
+                <option value="sa">🕉️ Sanskrit</option>
             </select>
         </div>
         <div class="control-group">
@@ -345,6 +346,7 @@
                 <option value="ja">🇯🇵 Japanese</option>
                 <option value="ru">🇷🇺 Russian</option>
                 <option value="hi">🇮🇳 Hindi</option>
+                <option value="sa">🕉️ Sanskrit</option>
                 <option value="bn">🇧🇩 Bengali</option>
                 <option value="ta">🇮🇳 Tamil</option>
                 <option value="te">🇮🇳 Telugu</option>
@@ -466,8 +468,13 @@
     </div>
 </div>
 
+
+
+
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.4.2/mammoth.browser.min.js"></script>
+<script src="https://unpkg.com/tesseract.js@5/dist/tesseract.min.js"></script>
 <script>
 (function(){
 'use strict';
@@ -501,6 +508,14 @@ let currentUtterance = null;
 let extraTextContent = '';
 let extraViewerActive = false;
 
+// ── OCR / Lazy-render State ───────────────────────────────────────────────────
+let pageObserver = null;
+let ocrWorker = null;
+let ocrReady = false;
+let ocrInitializing = false;
+// Cache page heights so placeholders are correct before canvas render
+let pageDimCache = {};
+
 // ── Language to BCP-47 mapping ───────────────────────────────────────────────
 const LANG_BCP = {
     en:'en-US', de:'de-DE', ja:'ja-JP', fr:'fr-FR', zh:'zh-CN', hi:'hi-IN',
@@ -509,25 +524,62 @@ const LANG_BCP = {
     kn:'kn', ko:'ko-KR', lt:'lt', lv:'lv', ml:'ml', mr:'mr', ms:'ms', nl:'nl-NL',
     nb:'nb', pa:'pa', pl:'pl-PL', pt:'pt-BR', ro:'ro', ru:'ru-RU', sk:'sk', sl:'sl',
     sq:'sq', sr:'sr', sv:'sv-SE', sw:'sw', ta:'ta-IN', te:'te-IN', th:'th', tl:'tl',
-    tr:'tr', uk:'uk', ur:'ur', vi:'vi', zu:'zu'
+    tr:'tr', uk:'uk', ur:'ur', vi:'vi', zu:'zu',
+    sa:'sa-IN'
 };
+
+
+// ── Tesseract language code map ───────────────────────────────────────────────
+const TESS_LANG = {
+    en:'eng', de:'deu', fr:'fra', es:'spa', zh:'chi_sim', ja:'jpn',
+    ru:'rus', hi:'hin', sa:'san', bn:'ben', ta:'tam', te:'tel', mr:'mar',
+    gu:'guj', pa:'pan', ar:'ara', ko:'kor', pt:'por', it:'ita',
+    af:'afr', bg:'bul', ca:'cat', cs:'ces', da:'dan', el:'ell',
+    fi:'fin', he:'heb', hr:'hrv', hu:'hun', id:'ind', kn:'kan',
+    lt:'lit', lv:'lav', ml:'mal', ms:'msa', nl:'nld', nb:'nor',
+    pl:'pol', ro:'ron', sk:'slk', sl:'slv', sq:'sqi', sr:'srp',
+    sv:'swe', sw:'swa', th:'tha', tl:'fil', tr:'tur', uk:'ukr',
+    ur:'urd', vi:'vie', zu:'zul',
+    
+};
+function getTessLang(lang) { return TESS_LANG[lang] || 'eng'; }
 
 function isGoogleVoice(voice) { return voice.name.toLowerCase().includes('google'); }
 
 function getBestVoiceForLang(lang) {
     if (!allVoices.length) return null;
-    const bcp = LANG_BCP[lang] || lang;
-    const langLower = lang.toLowerCase();
-    
-    let voice = allVoices.find(v => isGoogleVoice(v) && (v.lang.toLowerCase() === bcp.toLowerCase() || v.lang.toLowerCase().startsWith(langLower)));
+
+    // Sanskrit has NO native browser TTS voice.
+    // Research (github.com/avinashvarna/sanskrit_tts) shows Kannada is the
+    // phonetically closest language to Sanskrit among available TTS voices.
+    const VOICE_FALLBACK = { sa: 'kn' };
+    const effectiveLang = VOICE_FALLBACK[lang] || lang;
+    const bcp = LANG_BCP[effectiveLang] || effectiveLang;
+    const langPrefix = effectiveLang.toLowerCase();
+
+    // Priority 1: Google voice exact match (best quality)
+    let voice = allVoices.find(v =>
+        isGoogleVoice(v) &&
+        (v.lang.toLowerCase() === bcp.toLowerCase() || v.lang.toLowerCase().startsWith(langPrefix))
+    );
     if (voice) return voice;
-    
-    voice = allVoices.find(v => v.lang.toLowerCase() === bcp.toLowerCase() || v.lang.toLowerCase().startsWith(langLower));
+
+    // Priority 2: Any voice exact match
+    voice = allVoices.find(v =>
+        v.lang.toLowerCase() === bcp.toLowerCase() || v.lang.toLowerCase().startsWith(langPrefix)
+    );
     if (voice) return voice;
-    
+
+    // Priority 3: For Hindi specifically, try Google hi voice
+    if (lang === 'hi') {
+        voice = allVoices.find(v => isGoogleVoice(v) && v.lang.toLowerCase().startsWith('hi'));
+        if (voice) return voice;
+    }
+
+    // Priority 4: Any Google voice as last resort
     voice = allVoices.find(v => isGoogleVoice(v));
     if (voice) return voice;
-    
+
     return allVoices[0];
 }
 
@@ -558,7 +610,8 @@ const samplePhrases = {
     th:"สวัสดี! วันนี้คุณเป็นอย่างไรบ้าง?", tl:"Kamusta! Kumusta ka ngayon?",
     tr:"Merhaba! Bugün nasılsın?", uk:"Привіт! Як ти сьогодні?",
     ur:"ہیلو! آج آپ کیسے ہیں؟", vi:"Xin chào! Hôm nay bạn khỏe không?",
-    zu:"Sawubona! Unjani namuhla?"
+    zu:"Sawubona! Unjani namuhla?",
+    sa:"नमस्ते! अद्य भवान् कथम् अस्ति?"
 };
 
 function playVoiceSample(lang, voiceObj) {
@@ -681,6 +734,22 @@ function onLangChange(val){
     if($('languageSelect'))$('languageSelect').value=val;
     if($('langSelectMobile'))$('langSelectMobile').value=val;
     updateVoiceDropdowns();
+    // Voice info toasts for languages with limited TTS support
+    const VOICE_INFO = {
+        sa: '🕉️ Sanskrit: using Kannada voice (phonetically closest to Sanskrit)',
+        hi: '🇮🇳 Hindi: Google hi-IN voice selected'
+    };
+    if (VOICE_INFO[val]) showToast(VOICE_INFO[val], 3500);
+    // Update warning on mobile for Sanskrit
+    const warn = $('voiceWarnMobile');
+    if (warn) warn.textContent = val === 'sa'
+        ? '⚠️ No native Sanskrit TTS — Kannada voice used (best phonetic match)'
+        : '';
+    // Re-init OCR engine for new language
+    if (window.Tesseract && currentDocType === 'pdf') {
+        ocrReady = false; ocrInitializing = false;
+        initOCR(currentLang);
+    }
 }
 $('languageSelect')&&$('languageSelect').addEventListener('change',e=>onLangChange(e.target.value));
 $('langSelectMobile')&&$('langSelectMobile').addEventListener('change',e=>onLangChange(e.target.value));
@@ -987,27 +1056,185 @@ function loadPastedText(text){
     showToast('✅ Text loaded');
 }
 
+// ── OCR helpers ──────────────────────────────────────────────────────────────
+// Devanagari-script languages — use combined model for best accuracy
+const DEVANAGARI_LANGS = new Set(['hi','sa','mr','ne','bho']);
+
+// Canvas pre-processing: upscale + contrast boost → much better OCR accuracy
+function preprocessForOCR(canvas) {
+    const SCALE = 2;
+    const tmp = document.createElement('canvas');
+    tmp.width  = canvas.width  * SCALE;
+    tmp.height = canvas.height * SCALE;
+    const ctx = tmp.getContext('2d');
+    // Grayscale + contrast makes Devanagari ligatures stand out
+    ctx.filter = 'grayscale(1) contrast(1.6) brightness(1.05)';
+    ctx.drawImage(canvas, 0, 0, tmp.width, tmp.height);
+    return tmp;
+}
+
+// Build Tesseract language string — Devanagari gets combined model for accuracy
+function buildTessLang(appLang) {
+    const base = getTessLang(appLang);
+    if (DEVANAGARI_LANGS.has(appLang)) {
+        // Devanagari script model + language model = far better accuracy
+        return base + '+Devanagari';
+    }
+    return base;
+}
+
+async function initOCR(lang) {
+    const tessLang = buildTessLang(lang || currentLang);
+    if (ocrWorker && ocrWorker._tessLang === tessLang && ocrReady) return;
+    if (ocrWorker) { try { await ocrWorker.terminate(); } catch(e){} ocrWorker = null; ocrReady = false; }
+    if (ocrInitializing) return;
+    ocrInitializing = true;
+    try {
+        showToast(`🔍 Loading OCR (${tessLang}) – best quality…`, 2500);
+        // Use tessdata_best for dramatically higher Devanagari accuracy (93%+ char rate)
+        ocrWorker = await Tesseract.createWorker(tessLang, 1, {
+            logger: () => {},
+            langPath: 'https://tessdata.projectnaptha.com/4.0.0_best'
+        });
+        ocrWorker._tessLang = tessLang;
+        ocrReady = true;
+        ocrInitializing = false;
+        showToast(`✅ OCR ready (${tessLang})`, 1800);
+    } catch(e) {
+        console.warn('OCR best model failed, trying standard:', e);
+        ocrInitializing = false;
+        try {
+            // Fallback: try standard tessdata (without best)
+            const baseLang = getTessLang(lang || currentLang);
+            ocrWorker = await Tesseract.createWorker(baseLang, 1, { logger: () => {} });
+            ocrWorker._tessLang = baseLang;
+            ocrReady = true;
+            ocrInitializing = false;
+            showToast(`⚠️ Using standard OCR model (${baseLang})`, 2000);
+        } catch(e2) {
+            ocrInitializing = false;
+            showToast('❌ OCR failed to load', 2000);
+        }
+    }
+}
+
+// Render a single PDF page into an already-placed wrapper div
+async function renderSinglePage(pageNum, wrapper) {
+    const isMob = isMobile();
+    const scale = isMob ? mobileUserScale : desktopScale;
+    try {
+        const page = await pdfDoc.getPage(pageNum);
+        const viewport = page.getViewport({ scale });
+
+        // Ensure wrapper dimensions are up to date (zoom may have changed)
+        wrapper.style.width  = viewport.width  + 'px';
+        wrapper.style.height = viewport.height + 'px';
+        wrapper.innerHTML = ''; // clear skeleton
+
+        // ── Canvas ──
+        const canvas = document.createElement('canvas');
+        canvas.width  = viewport.width;
+        canvas.height = viewport.height;
+        const ctx = canvas.getContext('2d');
+        await page.render({ canvasContext: ctx, viewport }).promise;
+
+        // ── Text layer ──
+        const textLayer = document.createElement('div');
+        textLayer.className = 'textLayer';
+
+        const pdfText = await page.getTextContent();
+        const charCount = pdfText.items.reduce((n, it) => n + (it.str ? it.str.length : 0), 0);
+
+        if (charCount >= 5) {
+            // ── Native embedded text ──
+            pdfText.items.forEach(item => {
+                if (!item.str || !item.str.trim()) return;
+                const tx = pdfjsLib.Util.transform(viewport.transform, item.transform);
+                const span = document.createElement('span');
+                span.textContent = item.str;
+                span.style.left      = tx[4] + 'px';
+                span.style.top       = (tx[5] - Math.abs(tx[0])) + 'px';
+                span.style.fontSize  = Math.abs(tx[0]) + 'px';
+                span.style.lineHeight = '1';
+                span.dataset.text    = item.str;
+                if (isMob) attachTouchGestures(span); else attachClickGestures(span);
+                textLayer.appendChild(span);
+            });
+        } else {
+            // ── Scanned page → OCR ──
+            if (!ocrReady && !ocrInitializing) await initOCR(currentLang);
+            // If language changed, re-init worker with new language
+            if (ocrWorker && ocrWorker._tessLang !== buildTessLang(currentLang)) {
+                ocrReady = false; ocrInitializing = false;
+                await initOCR(currentLang);
+            }
+            if (ocrReady && ocrWorker) {
+                showToast(`🔍 OCR scanning page ${pageNum} (${getTessLang(currentLang)})…`, 3500);
+                try {
+                    // Preprocess canvas (2× scale + contrast) before OCR for better accuracy
+                    const ocrCanvas = preprocessForOCR(canvas);
+                    const result = await ocrWorker.recognize(ocrCanvas);
+                    result.data.words.forEach(word => {
+                        if (!word.text || !word.text.trim()) return;
+                        const { x0, y0, x1, y1 } = word.bbox;
+                        const fontSize = Math.max(8, y1 - y0);
+                        const span = document.createElement('span');
+                        span.textContent  = word.text + ' ';
+                        span.style.left   = x0 + 'px';
+                        span.style.top    = y0 + 'px';
+                        span.style.fontSize = fontSize + 'px';
+                        span.style.lineHeight = '1';
+                        span.dataset.text = word.text;
+                        if (isMob) attachTouchGestures(span); else attachClickGestures(span);
+                        textLayer.appendChild(span);
+                    });
+                    if (result.data.words.length > 0)
+                        showToast(`✅ OCR done – page ${pageNum} (${result.data.words.length} words)`, 2000);
+                } catch(ocrErr) {
+                    console.warn('OCR failed page', pageNum, ocrErr);
+                }
+            }
+        }
+
+        wrapper.appendChild(canvas);
+        wrapper.appendChild(textLayer);
+    } catch(e) {
+        console.error('Page render failed', pageNum, e);
+        wrapper.innerHTML = `<div style="color:var(--muted);padding:20px;text-align:center;height:100%;display:flex;align-items:center;justify-content:center;">⚠️ Page ${pageNum} error</div>`;
+    }
+}
+
 async function loadPDF(file){
+    const sizeMB = (file.size / (1024*1024)).toFixed(1);
     showToast('⏳ Loading PDF…');
+    if (file.size > 80 * 1024 * 1024) {
+        showToast(`⚠️ ${sizeMB} MB – large file, using stream mode`, 4000);
+    }
     try{
-        const buf=await file.arrayBuffer();
-        if(pdfDoc)await pdfDoc.destroy();
-        pdfDoc=await pdfjsLib.getDocument({data:buf}).promise;
-        totalPages=pdfDoc.numPages;
-        mobileUserScale=1.0;desktopScale=DESKTOP_BASE;
+        // ── Blob URL: streams pages on-demand instead of buffering entire file ──
+        const blobUrl = URL.createObjectURL(file);
+        if(pdfDoc){
+            try{ await pdfDoc.destroy(); }catch(e){}
+            if(pdfDoc._blobUrl) URL.revokeObjectURL(pdfDoc._blobUrl);
+        }
+        pdfDoc = await pdfjsLib.getDocument({ url: blobUrl, cMapPacked: true }).promise;
+        pdfDoc._blobUrl = blobUrl;
+        totalPages = pdfDoc.numPages;
+        pageDimCache = {};
+        mobileUserScale = 1.0; desktopScale = DESKTOP_BASE;
         currentDocType = 'pdf';
-        hideDocReader(); // no player for PDF
-        hideExtraViewer(); // clear any extra text
+        hideDocReader();
+        hideExtraViewer();
         wordsList = [];
         updateZoomBadges();
         if(isMobile()){
             $('mobileStartScreen').classList.remove('active');
             $('bookReader').classList.add('active');
-            await renderAllPdfPages();
-        }else{
-            await renderAllPdfPages();
         }
-        showToast(`✅ PDF Loaded! (${totalPages} pages)`);
+        await renderAllPdfPages();
+        showToast(`✅ PDF loaded · ${totalPages} pages · ${sizeMB} MB`);
+        // Init OCR engine in background for scanned PDFs
+        if (!ocrReady && !ocrInitializing) initOCR(currentLang);
     }catch(err){showToast('❌ Failed to load PDF');console.error(err);}
 }
 
@@ -1157,62 +1384,81 @@ async function renderTextViewer(text) {
     $('readingProgress').style.width = '0%';
 }
 
-// PDF rendering (continuous scroll)
+// PDF rendering — lazy viewport-only with IntersectionObserver + auto OCR
 async function renderAllPdfPages() {
     if (!pdfDoc) return;
     const isMob = isMobile();
     const container = isMob ? $('bookPage') : $('pdfContainer');
-    container.innerHTML = ''; // clear
+    const scrollRoot = isMob ? $('bookPage') : $('pdfViewer');
+
+    // Disconnect any previous observer
+    if (pageObserver) { pageObserver.disconnect(); pageObserver = null; }
+    container.innerHTML = '';
 
     const scale = isMob ? mobileUserScale : desktopScale;
-    const frag = document.createDocumentFragment();
+
+    // ── Phase 1: build all placeholder divs (fast – no rendering yet) ──
+    const showToastOnce = totalPages > 30;
+    if (showToastOnce) showToast(`📄 Setting up ${totalPages} pages…`, 2000);
 
     for (let i = 1; i <= pdfDoc.numPages; i++) {
-        const page = await pdfDoc.getPage(i);
-        const viewport = page.getViewport({ scale });
+        // Use cached dims or fetch page for first measurement
+        let w, h;
+        if (pageDimCache[i + '_' + scale]) {
+            ({ w, h } = pageDimCache[i + '_' + scale]);
+        } else {
+            const page = await pdfDoc.getPage(i);
+            const vp = page.getViewport({ scale });
+            w = vp.width; h = vp.height;
+            pageDimCache[i + '_' + scale] = { w, h };
+        }
 
-        // page wrapper (relative)
         const wrapper = document.createElement('div');
         wrapper.className = 'page-wrapper';
-        wrapper.style.width = viewport.width + 'px';
-        wrapper.style.height = viewport.height + 'px';
-        wrapper.style.margin = '0 auto 12px auto'; // center with gap
+        wrapper.style.cssText = `width:${w}px;height:${h}px;margin:0 auto 12px auto;background:#13132a;display:flex;align-items:center;justify-content:center;`;
+        wrapper.dataset.pageNum = String(i);
+        wrapper.dataset.rendered = 'false';
 
-        // canvas
-        const canvas = document.createElement('canvas');
-        canvas.width = viewport.width;
-        canvas.height = viewport.height;
-        const ctx = canvas.getContext('2d');
-        await page.render({ canvasContext: ctx, viewport }).promise;
-
-        // text layer
-        const textLayer = document.createElement('div');
-        textLayer.className = 'textLayer';
-        const textContent = await page.getTextContent();
-        textContent.items.forEach(item => {
-            if (!item.str.trim()) return;
-            const tx = pdfjsLib.Util.transform(viewport.transform, item.transform);
-            const span = document.createElement('span');
-            span.textContent = item.str;
-            span.style.left = tx[4] + 'px';
-            span.style.top = (tx[5] - Math.abs(tx[0])) + 'px';
-            span.style.fontSize = Math.abs(tx[0]) + 'px';
-            span.style.lineHeight = '1';
-            span.dataset.text = item.str;
-            if (isMob) attachTouchGestures(span);
-            else attachClickGestures(span);
-            textLayer.appendChild(span);
-        });
-
-        wrapper.appendChild(canvas);
-        wrapper.appendChild(textLayer);
-        frag.appendChild(wrapper);
+        // Skeleton placeholder
+        const skel = document.createElement('div');
+        skel.style.cssText = 'color:rgba(120,120,170,0.5);font-size:.78rem;font-family:Inter,sans-serif;display:flex;flex-direction:column;align-items:center;gap:6px;';
+        skel.innerHTML = `<div style="width:40px;height:40px;border:2px solid rgba(124,111,255,.3);border-top-color:var(--primary);border-radius:50%;animation:spin .9s linear infinite;"></div><span>Page ${i}</span>`;
+        wrapper.appendChild(skel);
+        container.appendChild(wrapper);
     }
-    container.appendChild(frag);
-    if (isMob) $('bookPage').scrollTop = 0;
-    else $('pdfContainer').scrollTop = 0;
+
+    // Add spin keyframe once
+    if (!document.getElementById('skelStyle')) {
+        const st = document.createElement('style');
+        st.id = 'skelStyle';
+        st.textContent = '@keyframes spin{to{transform:rotate(360deg)}}';
+        document.head.appendChild(st);
+    }
+
+    if (isMob) { $('bookPage').scrollTop = 0; $('readingProgress').style.width = '0%'; }
+    else $('pdfViewer').scrollTop = 0;
     updateZoomBadges();
-    if (isMob) $('readingProgress').style.width = '100%'; // progress bar not used for PDF, just set full
+
+    // ── Phase 2: IntersectionObserver – render only visible pages ──
+    pageObserver = new IntersectionObserver(async (entries) => {
+        for (const entry of entries) {
+            const wrapper = entry.target;
+            if (entry.isIntersecting && wrapper.dataset.rendered === 'false') {
+                wrapper.dataset.rendered = 'loading';
+                const pageNum = parseInt(wrapper.dataset.pageNum, 10);
+                await renderSinglePage(pageNum, wrapper);
+                wrapper.dataset.rendered = 'true';
+            }
+        }
+    }, {
+        root: scrollRoot,
+        rootMargin: '300px 0px 300px 0px', // prerender 300px ahead & behind
+        threshold: 0
+    });
+
+    container.querySelectorAll('.page-wrapper[data-page-num]').forEach(w => pageObserver.observe(w));
+
+    // Closing brace – functionality moved into IntersectionObserver callback above
 }
 
 async function zoomDesktop(s){desktopScale=Math.min(DESKTOP_MAX,Math.max(DESKTOP_MIN,s));updateZoomBadges();if(pdfDoc && currentDocType==='pdf')await renderAllPdfPages();}
@@ -1706,3 +1952,4 @@ $('bnFeedback')?.addEventListener('click', ()=>{ $('feedbackModal').classList.ad
 </script>
 </body>
 </html>
+
